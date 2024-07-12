@@ -1,0 +1,1037 @@
+[
+    {
+        "id": "01a4197730395bcb",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "8cea17a25b959841",
+        "type": "inject",
+        "z": "01a4197730395bcb",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 140,
+        "y": 320,
+        "wires": [
+            [
+                "6553bed9b9824d25",
+                "2446046577c304ef",
+                "0de78efe2660b464",
+                "04de4ea2a92fbae0"
+            ]
+        ]
+    },
+    {
+        "id": "07d1e91f278edeef",
+        "type": "debug",
+        "z": "01a4197730395bcb",
+        "name": "debug 28",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 700,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "6553bed9b9824d25",
+        "type": "function",
+        "z": "01a4197730395bcb",
+        "name": "Paper Roll Thickness Function",
+        "func": "// Paper Roll Thickness Function Node\nvar minThickness = 0.1; // Minimum thickness in mm\nvar maxThickness = 50;  // Maximum thickness in mm\n\n// Generate a random thickness between minThickness and maxThickness\nvar thickness = (Math.random() * (maxThickness - minThickness)) + minThickness;\n\nmsg.payload = thickness.toFixed(2); // Return thickness with two decimal places\nflow.set(\"paperThickness\", thickness);\nmsg.unit = \"mm\";\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 470,
+        "y": 180,
+        "wires": [
+            [
+                "07d1e91f278edeef",
+                "6bc513a8fb66a1f7",
+                "04de4ea2a92fbae0"
+            ]
+        ]
+    },
+    {
+        "id": "2446046577c304ef",
+        "type": "function",
+        "z": "01a4197730395bcb",
+        "name": "Paper Feed Rate Function",
+        "func": "// Paper Feed Rate Function Node\nvar minFeedRate = 0.1; // Minimum feed rate in m/s\nvar maxFeedRate = 2.0; // Maximum feed rate in m/s\n\n// Generate a random feed rate between minFeedRate and maxFeedRate\nvar feedRate = (Math.random() * (maxFeedRate - minFeedRate)) + minFeedRate;\n\nmsg.payload = feedRate.toFixed(2); // Return feed rate with two decimal places\nflow.set(\"feedRate\", feedRate);\nmsg.unit = \"m/s\";\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 460,
+        "y": 220,
+        "wires": [
+            [
+                "86a50948e28dc417",
+                "85913c4c4c9ea74c"
+            ]
+        ]
+    },
+    {
+        "id": "0de78efe2660b464",
+        "type": "function",
+        "z": "01a4197730395bcb",
+        "name": "Glue Level Status Function",
+        "func": "// Function Node to Generate Glue Level and Set Status\nfunction generateGlueLevel() {\n    var level;\n    var rand = Math.random();\n    \n    // 80% chance to generate a level between 0.4 and 1\n    if (rand < 0.8) {\n        level = 0.4 + (Math.random() * 0.6); // Generate a number between 0.4 and 1\n    } else {\n        // 20% chance to generate a level below 0.25\n        level = Math.random() * 0.25; // Generate a number between 0 and 0.25\n    }\n    \n    return level;\n}\n\nvar glueLevel = generateGlueLevel();\n\n// Set the payload to true if level is above 0.25, false if below\nmsg.payload = glueLevel > 0.25;\nmsg.level = glueLevel;\nmsg.glueLevel = glueLevel.toFixed(2); // Optionally, include the actual glue level in the message\nflow.set(\"glueLevel\", glueLevel);\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 460,
+        "y": 260,
+        "wires": [
+            [
+                "c23e9b52c75c413e",
+                "6bc513a8fb66a1f7"
+            ]
+        ]
+    },
+    {
+        "id": "04de4ea2a92fbae0",
+        "type": "function",
+        "z": "01a4197730395bcb",
+        "name": "Paper Length Calculation Function",
+        "func": "// Estimated Paper Length Calculation Function Node\n// Assuming the following constants:\nvar paperThickness = 0.1; // Thickness of a sheet of paper in mm\nvar coreRadius = 50;      // Radius of the core of the paper roll in mm\n\n// Get the current thickness from the previous node\nvar currentThickness = flow.get(\"paperThickness\");\n\n// Calculate the remaining paper length\nvar radius = currentThickness + coreRadius;\nvar paperLength = (Math.PI * Math.pow(radius, 2) - Math.PI * Math.pow(coreRadius, 2)) / paperThickness;\n\nmsg.payload = paperLength.toFixed(2); // Return paper length with two decimal places\nflow.set(\"paperLength\", paperLength);\nmsg.unit = \"mm\";\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 480,
+        "y": 300,
+        "wires": [
+            [
+                "f8fff83a10dd34c8"
+            ]
+        ]
+    },
+    {
+        "id": "86a50948e28dc417",
+        "type": "debug",
+        "z": "01a4197730395bcb",
+        "name": "debug 29",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 700,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "c23e9b52c75c413e",
+        "type": "debug",
+        "z": "01a4197730395bcb",
+        "name": "debug 30",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 700,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "f8fff83a10dd34c8",
+        "type": "debug",
+        "z": "01a4197730395bcb",
+        "name": "debug 31",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 700,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "1e0eb384583bdbb1",
+        "type": "function",
+        "z": "01a4197730395bcb",
+        "name": "function 36",
+        "func": "// Function Node to Retrieve the Stored Paper Length\nvar paperLength = flow.get(\"paperLength\");\n\nif (paperLength !== undefined) {\n    msg.payload = paperLength.toFixed(2);\n} else {\n    msg.payload = \"Paper length not available\";\n}\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 450,
+        "y": 400,
+        "wires": [
+            [
+                "5d6073888237e0cc",
+                "0cde7b69abf85398"
+            ]
+        ]
+    },
+    {
+        "id": "eacb6eca2cf8dc71",
+        "type": "inject",
+        "z": "01a4197730395bcb",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "3",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 250,
+        "y": 520,
+        "wires": [
+            [
+                "1e0eb384583bdbb1",
+                "c4e64fa499f60959",
+                "82dc5298ad43908c",
+                "0bcb4f3f0336e30e"
+            ]
+        ]
+    },
+    {
+        "id": "c4e64fa499f60959",
+        "type": "function",
+        "z": "01a4197730395bcb",
+        "name": "function 37",
+        "func": "// Function Node to Retrieve the Stored Paper Length\nvar glueLevel = flow.get(\"glueLevel\");\n\nif (glueLevel !== undefined) {\n    msg.payload = glueLevel;\n    if (glueLevel > 0.25) {\n    msg.payload = true;\n    } else {\n        msg.payload = false;\n    }\n} else {\n    msg.payload = \"Paper length not available\";\n}\nmsg.glueLevel = glueLevel.toFixed(2);\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 450,
+        "y": 440,
+        "wires": [
+            [
+                "f5a904534aa1e269"
+            ]
+        ]
+    },
+    {
+        "id": "989d5e85129004f5",
+        "type": "ui_gauge",
+        "z": "01a4197730395bcb",
+        "name": "",
+        "group": "71adbb4b7d04233e",
+        "order": 9,
+        "width": 7,
+        "height": 5,
+        "gtype": "gage",
+        "title": "Paper_Roll_Thickness",
+        "label": "mm",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "50",
+        "colors": [
+            "#ff66eb",
+            "#eb66eb",
+            "#ff66eb"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "x": 860,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "85913c4c4c9ea74c",
+        "type": "ui_gauge",
+        "z": "01a4197730395bcb",
+        "name": "",
+        "group": "71adbb4b7d04233e",
+        "order": 11,
+        "width": 8,
+        "height": 5,
+        "gtype": "gage",
+        "title": "Paper_Feed_Rate",
+        "label": "m/s",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "2",
+        "colors": [
+            "#ff8800",
+            "#ff8800",
+            "#ff8800"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "x": 890,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "6ea032d7957358d2",
+        "type": "ui_gauge",
+        "z": "01a4197730395bcb",
+        "name": "",
+        "group": "71adbb4b7d04233e",
+        "order": 10,
+        "width": 7,
+        "height": 5,
+        "gtype": "gage",
+        "title": "Glue_Level",
+        "label": "dm3",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "1",
+        "colors": [
+            "#00b500",
+            "#00b500",
+            "#00b500"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "x": 890,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "5d6073888237e0cc",
+        "type": "ui_gauge",
+        "z": "01a4197730395bcb",
+        "name": "",
+        "group": "71adbb4b7d04233e",
+        "order": 13,
+        "width": 8,
+        "height": 5,
+        "gtype": "gage",
+        "title": "Paper_Length_Remaining",
+        "label": "mm",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "200000",
+        "colors": [
+            "#0cb5ed",
+            "#0cb5f7",
+            "#0cb5f7"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "x": 910,
+        "y": 420,
+        "wires": []
+    },
+    {
+        "id": "0cde7b69abf85398",
+        "type": "ui_numeric",
+        "z": "01a4197730395bcb",
+        "name": "",
+        "label": "Paper_Length_Remaining",
+        "tooltip": "",
+        "group": "71adbb4b7d04233e",
+        "order": 6,
+        "width": 11,
+        "height": 2,
+        "wrap": false,
+        "passthru": true,
+        "topic": "topic",
+        "topicType": "msg",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "20000",
+        "step": 1,
+        "x": 910,
+        "y": 380,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "afbdbcf3b2463752",
+        "type": "inject",
+        "z": "01a4197730395bcb",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "pause",
+                "v": "PAUSE",
+                "vt": "env"
+            }
+        ],
+        "repeat": "1",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "",
+        "topic": "",
+        "payload": "",
+        "payloadType": "str",
+        "x": 150,
+        "y": 620,
+        "wires": [
+            [
+                "26db221a7705f9d4"
+            ]
+        ]
+    },
+    {
+        "id": "26db221a7705f9d4",
+        "type": "function",
+        "z": "01a4197730395bcb",
+        "name": "Increment Progress",
+        "func": "// Function Node: Increment Progress\nvar progress = flow.get('progress') || 0;\nvar delayFlag = flow.get('delayFlag') || false;\nvar counter = flow.get('counter') || 0;\nvar pauseFlag = flow.get('pauseFlag') || false;\nflow.set('pauseFlag', pauseFlag);\n\n\nif (!pauseFlag) {\n    progress += 2;\n    if (progress > 100) {\n        progress = 0; // Reset progress after reaching 100%\n        counter += 1; // Increment counter for each loop\n        flow.set('progress', progress);\n        flow.set('counter', counter);\n        \n        msg.count = counter;\n        return [null, msg]; // Send counter after each complete cycle on the second output\n    }\n    \n    flow.set('progress', progress);\n    flow.set('counter', counter);\n\n    // Set delay flag if progress is at 34%, 68%, or 100%\n    if (progress === 34 || progress === 68 || progress === 100) {\n        flow.set('delayFlag', true);\n    }\n    \n    msg.payload = progress;\n    return [msg, null]; // Send progress updates on the first output\n} else {\n    return [null, null]; // Do not proceed if delayFlag is set or if paused\n}\n",
+        "outputs": 2,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 330,
+        "y": 660,
+        "wires": [
+            [
+                "5d7aee3378e9fd66",
+                "61452ef5016285d4"
+            ],
+            [
+                "664c31af83509550"
+            ]
+        ]
+    },
+    {
+        "id": "5d7aee3378e9fd66",
+        "type": "switch",
+        "z": "01a4197730395bcb",
+        "name": "Check Progress",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "34",
+                "vt": "num"
+            },
+            {
+                "t": "eq",
+                "v": "68",
+                "vt": "num"
+            },
+            {
+                "t": "eq",
+                "v": "100",
+                "vt": "num"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 3,
+        "x": 480,
+        "y": 740,
+        "wires": [
+            [
+                "83c6cf38444d655a",
+                "e6d2f56bcb306c76"
+            ],
+            [
+                "83c6cf38444d655a",
+                "2b97f64bba815774"
+            ],
+            [
+                "83c6cf38444d655a",
+                "487f1b09e6fe2520"
+            ]
+        ]
+    },
+    {
+        "id": "24ea522b908f27c4",
+        "type": "change",
+        "z": "01a4197730395bcb",
+        "name": "Reset Delay Flag",
+        "rules": [
+            {
+                "t": "set",
+                "p": "delayFlag",
+                "pt": "flow",
+                "to": "false",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 910,
+        "y": 880,
+        "wires": [
+            [
+                "26db221a7705f9d4"
+            ]
+        ]
+    },
+    {
+        "id": "83c6cf38444d655a",
+        "type": "delay",
+        "z": "01a4197730395bcb",
+        "name": "",
+        "pauseType": "delay",
+        "timeout": "2",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 740,
+        "y": 880,
+        "wires": [
+            [
+                "24ea522b908f27c4"
+            ]
+        ]
+    },
+    {
+        "id": "f5a904534aa1e269",
+        "type": "change",
+        "z": "01a4197730395bcb",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "glueLevel",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 640,
+        "y": 440,
+        "wires": [
+            [
+                "6ea032d7957358d2"
+            ]
+        ]
+    },
+    {
+        "id": "28d31e484f3c19a3",
+        "type": "ui_toast",
+        "z": "01a4197730395bcb",
+        "position": "top right",
+        "displayTime": "3",
+        "highlight": "",
+        "sendall": true,
+        "outputs": 0,
+        "ok": "OK",
+        "cancel": "",
+        "raw": false,
+        "topic": "",
+        "name": "",
+        "x": 950,
+        "y": 800,
+        "wires": []
+    },
+    {
+        "id": "30ac8a9c6b72d3bd",
+        "type": "ui_gauge",
+        "z": "01a4197730395bcb",
+        "name": "",
+        "group": "71adbb4b7d04233e",
+        "order": 12,
+        "width": 7,
+        "height": 5,
+        "gtype": "gage",
+        "title": "Number of Bags",
+        "label": "count",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "100",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "x": 720,
+        "y": 700,
+        "wires": []
+    },
+    {
+        "id": "664c31af83509550",
+        "type": "function",
+        "z": "01a4197730395bcb",
+        "name": "function 38",
+        "func": "var bags = msg.count;\nvar numberofbags = bags * 5;\nmsg.payload = numberofbags;\n\nvar paperLength = flow.get(\"paperLength\");\nvar paperThickness = flow.get(\"paperThickness\");\nvar glueLevel = flow.get(\"glueLevel\");\n\nif (paperLength < 1000) {\n    flow.set('pauseFlag', true);\n    return [msg, null, null];\n}\nif (glueLevel < 0.25) {\n    flow.set('pauseFlag', true);\n    return [null, msg, null];\n}\nif (paperLength !== undefined) {\n    paperLength -= 1000;\n    flow.set(\"paperLength\", paperLength);\n    paperThickness -= 0.25;\n    flow.set(\"paperThickness\", paperThickness);\n    glueLevel -= 0.01;\n    flow.set(\"glueLevel\", glueLevel);\n} else {\n    msg.payload = \"Variables not available\";\n}\n\nreturn [null, null, msg];\n",
+        "outputs": 3,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 530,
+        "y": 660,
+        "wires": [
+            [
+                "89ad83759ad9097e"
+            ],
+            [
+                "bbcb3961c635f51f"
+            ],
+            [
+                "30ac8a9c6b72d3bd"
+            ]
+        ]
+    },
+    {
+        "id": "112fbdcfb3a28de1",
+        "type": "ui_button",
+        "z": "01a4197730395bcb",
+        "name": "",
+        "group": "71adbb4b7d04233e",
+        "order": 15,
+        "width": 7,
+        "height": 2,
+        "passthru": false,
+        "label": "Refill Paper",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "#99ccff",
+        "icon": "",
+        "payload": "1",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 130,
+        "y": 200,
+        "wires": [
+            [
+                "6553bed9b9824d25"
+            ]
+        ]
+    },
+    {
+        "id": "61452ef5016285d4",
+        "type": "ui_template",
+        "z": "01a4197730395bcb",
+        "group": "71adbb4b7d04233e",
+        "name": "",
+        "order": 18,
+        "width": 0,
+        "height": 0,
+        "format": "<md-card>\n    <div style=\"width: 1000; height: 50px; border: 1px solid #000; position: relative;\">\n        <div id=\"progress-bar\" style=\"width: 0; height: 100%; background-color: #76c7c0;\"></div>\n    </div>\n</md-card>\n\n<script>\n(function(scope) {\n    scope.$watch('msg.payload', function(progress) {\n        var progressBar = document.getElementById('progress-bar');\n        if (progressBar) {\n            progressBar.style.width = progress + '%';\n        }\n    });\n})(scope);\n</script>\n",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "x": 360,
+        "y": 620,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "0333304d9488b814",
+        "type": "ui_button",
+        "z": "01a4197730395bcb",
+        "name": "",
+        "group": "71adbb4b7d04233e",
+        "order": 16,
+        "width": 7,
+        "height": 2,
+        "passthru": false,
+        "label": "Refill Glue",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "#6666ff",
+        "icon": "",
+        "payload": "1",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 130,
+        "y": 240,
+        "wires": [
+            [
+                "0de78efe2660b464"
+            ]
+        ]
+    },
+    {
+        "id": "82dc5298ad43908c",
+        "type": "function",
+        "z": "01a4197730395bcb",
+        "name": "function 40",
+        "func": "// Function Node to Retrieve the Stored Paper Length\nvar glueLevel = flow.get(\"glueLevel\");\n\nif (glueLevel !== undefined) {\n    msg.payload = glueLevel;\n    if (glueLevel > 0.25) {\n    msg.payload = true;\n    } else {\n        msg.payload = false;\n    }\n} else {\n    msg.payload = \"Paper length not available\";\n}\nmsg.glueLevel = glueLevel.toFixed(2);\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 450,
+        "y": 480,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "0bcb4f3f0336e30e",
+        "type": "function",
+        "z": "01a4197730395bcb",
+        "name": "function 41",
+        "func": "// Function Node to Retrieve the Stored Paper Length\nvar paperThickness = flow.get(\"paperThickness\");\n\nif (paperThickness !== undefined) {\n    msg.payload = paperThickness.toFixed(2);\n} else {\n    msg.payload = \"Paper length not available\";\n}\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 550,
+        "y": 520,
+        "wires": [
+            [
+                "989d5e85129004f5"
+            ]
+        ]
+    },
+    {
+        "id": "e6d2f56bcb306c76",
+        "type": "function",
+        "z": "01a4197730395bcb",
+        "name": "function 42",
+        "func": "msg.payload = \"Stage 1: Paper Bag is Being Creased\"\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 750,
+        "y": 760,
+        "wires": [
+            [
+                "28d31e484f3c19a3"
+            ]
+        ]
+    },
+    {
+        "id": "2b97f64bba815774",
+        "type": "function",
+        "z": "01a4197730395bcb",
+        "name": "function 43",
+        "func": "msg.payload = \"Stage 3: Paper Bag is Being Glued\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 750,
+        "y": 840,
+        "wires": [
+            [
+                "28d31e484f3c19a3"
+            ]
+        ]
+    },
+    {
+        "id": "487f1b09e6fe2520",
+        "type": "function",
+        "z": "01a4197730395bcb",
+        "name": "function 44",
+        "func": "msg.payload = \"Stage 2: Paper Bag is Being Cut\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 750,
+        "y": 800,
+        "wires": [
+            [
+                "28d31e484f3c19a3"
+            ]
+        ]
+    },
+    {
+        "id": "6bc513a8fb66a1f7",
+        "type": "function",
+        "z": "01a4197730395bcb",
+        "name": "function 39",
+        "func": "var paperLength = flow.get(\"paperLength\");\nvar glueLevel = flow.get(\"glueLevel\");\n\nif (paperLength > 1000) {\n    flow.set('pauseFlag', false);\n}\nif (glueLevel > 0.25) {\n    flow.set('pauseFlag', false);\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 710,
+        "y": 140,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "775c13d9a3b565a5",
+        "type": "ui_toast",
+        "z": "01a4197730395bcb",
+        "position": "top right",
+        "displayTime": "5",
+        "highlight": "",
+        "sendall": true,
+        "outputs": 0,
+        "ok": "OK",
+        "cancel": "",
+        "raw": false,
+        "topic": "",
+        "name": "",
+        "x": 910,
+        "y": 620,
+        "wires": []
+    },
+    {
+        "id": "52d61c60f2b2661d",
+        "type": "ui_toast",
+        "z": "01a4197730395bcb",
+        "position": "top right",
+        "displayTime": "5",
+        "highlight": "",
+        "sendall": true,
+        "outputs": 0,
+        "ok": "OK",
+        "cancel": "",
+        "raw": false,
+        "topic": "",
+        "name": "",
+        "x": 910,
+        "y": 660,
+        "wires": []
+    },
+    {
+        "id": "89ad83759ad9097e",
+        "type": "function",
+        "z": "01a4197730395bcb",
+        "name": "function 45",
+        "func": "msg.payload = \"-----ALERT! Refill Paper to Continue Process------\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 710,
+        "y": 620,
+        "wires": [
+            [
+                "775c13d9a3b565a5"
+            ]
+        ]
+    },
+    {
+        "id": "bbcb3961c635f51f",
+        "type": "function",
+        "z": "01a4197730395bcb",
+        "name": "function 46",
+        "func": "msg.payload = \"-----ALERT! Refill Glue to Continue Process------\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 710,
+        "y": 660,
+        "wires": [
+            [
+                "52d61c60f2b2661d"
+            ]
+        ]
+    },
+    {
+        "id": "3458aa6aea56ba42",
+        "type": "ui_button",
+        "z": "01a4197730395bcb",
+        "name": "",
+        "group": "71adbb4b7d04233e",
+        "order": 4,
+        "width": 9,
+        "height": 2,
+        "passthru": false,
+        "label": "Start Machine",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "#b266ff",
+        "icon": "",
+        "payload": "1",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 140,
+        "y": 280,
+        "wires": [
+            [
+                "6553bed9b9824d25",
+                "2446046577c304ef",
+                "0de78efe2660b464",
+                "04de4ea2a92fbae0"
+            ]
+        ]
+    },
+    {
+        "id": "cf7230986558719c",
+        "type": "ui_spacer",
+        "z": "01a4197730395bcb",
+        "name": "spacer",
+        "group": "71adbb4b7d04233e",
+        "order": 1,
+        "width": 22,
+        "height": 1
+    },
+    {
+        "id": "6da38c8b6741fc2d",
+        "type": "ui_spacer",
+        "z": "01a4197730395bcb",
+        "name": "spacer",
+        "group": "71adbb4b7d04233e",
+        "order": 2,
+        "width": 22,
+        "height": 1
+    },
+    {
+        "id": "11439eea2e8e83c6",
+        "type": "ui_spacer",
+        "z": "01a4197730395bcb",
+        "name": "spacer",
+        "group": "71adbb4b7d04233e",
+        "order": 3,
+        "width": 22,
+        "height": 1
+    },
+    {
+        "id": "ea0cd853f057b9b0",
+        "type": "ui_spacer",
+        "z": "01a4197730395bcb",
+        "name": "spacer",
+        "group": "71adbb4b7d04233e",
+        "order": 5,
+        "width": 2,
+        "height": 1
+    },
+    {
+        "id": "eb5f47cd94e72d60",
+        "type": "ui_spacer",
+        "z": "01a4197730395bcb",
+        "name": "spacer",
+        "group": "71adbb4b7d04233e",
+        "order": 7,
+        "width": 2,
+        "height": 1
+    },
+    {
+        "id": "d7e26425eba76db7",
+        "type": "ui_spacer",
+        "z": "01a4197730395bcb",
+        "name": "spacer",
+        "group": "71adbb4b7d04233e",
+        "order": 8,
+        "width": 22,
+        "height": 1
+    },
+    {
+        "id": "a29ec4398b46b0cd",
+        "type": "ui_spacer",
+        "z": "01a4197730395bcb",
+        "name": "spacer",
+        "group": "71adbb4b7d04233e",
+        "order": 14,
+        "width": 7,
+        "height": 1
+    },
+    {
+        "id": "4353d780480314a8",
+        "type": "ui_spacer",
+        "z": "01a4197730395bcb",
+        "name": "spacer",
+        "group": "71adbb4b7d04233e",
+        "order": 17,
+        "width": 22,
+        "height": 1
+    },
+    {
+        "id": "71adbb4b7d04233e",
+        "type": "ui_group",
+        "name": "Paper Bag Machine Monitoring System",
+        "tab": "e736ddc3bb622f5b",
+        "order": 1,
+        "disp": true,
+        "width": "22",
+        "collapse": false
+    },
+    {
+        "id": "e736ddc3bb622f5b",
+        "type": "ui_tab",
+        "name": "Home",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    }
+]

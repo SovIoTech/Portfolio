@@ -1,0 +1,627 @@
+[
+    {
+        "id": "abe5c2cc63e46b70",
+        "type": "tab",
+        "label": "Flow 2",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "switch1",
+        "type": "switch",
+        "z": "abe5c2cc63e46b70",
+        "name": "",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "true"
+            },
+            {
+                "t": "false"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 250,
+        "y": 220,
+        "wires": [
+            [
+                "ui_switch1",
+                "3e5002aa495e7d41",
+                "24ae26887642dbd1"
+            ],
+            [
+                "ui_switch1",
+                "3e5002aa495e7d41",
+                "24ae26887642dbd1"
+            ]
+        ]
+    },
+    {
+        "id": "ui_switch1",
+        "type": "ui_switch",
+        "z": "abe5c2cc63e46b70",
+        "name": "",
+        "label": "LED",
+        "tooltip": "",
+        "group": "788e1bea1606cb2e",
+        "order": 20,
+        "width": 0,
+        "height": 0,
+        "passthru": true,
+        "decouple": "false",
+        "topic": "led/control",
+        "topicType": "str",
+        "style": "",
+        "onvalue": "true",
+        "onvalueType": "bool",
+        "onicon": "",
+        "oncolor": "",
+        "offvalue": "false",
+        "offvalueType": "bool",
+        "officon": "",
+        "offcolor": "",
+        "animate": true,
+        "className": "",
+        "x": 430,
+        "y": 220,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "4e5d7477bb7ada2a",
+        "type": "mqtt in",
+        "z": "abe5c2cc63e46b70",
+        "name": "",
+        "topic": "led/control",
+        "qos": "1",
+        "datatype": "auto-detect",
+        "broker": "558d974b449cf58c",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 80,
+        "y": 220,
+        "wires": [
+            [
+                "switch1"
+            ]
+        ]
+    },
+    {
+        "id": "c97d8c352ed9ab64",
+        "type": "mqtt out",
+        "z": "abe5c2cc63e46b70",
+        "name": "",
+        "topic": "led/control",
+        "qos": "1",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "558d974b449cf58c",
+        "x": 390,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "be4856bbb0924520",
+        "type": "inject",
+        "z": "abe5c2cc63e46b70",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "led/control",
+        "payload": "true",
+        "payloadType": "bool",
+        "x": 120,
+        "y": 40,
+        "wires": [
+            [
+                "c97d8c352ed9ab64"
+            ]
+        ]
+    },
+    {
+        "id": "9cd5b7431d0d9844",
+        "type": "inject",
+        "z": "abe5c2cc63e46b70",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "led/control",
+        "payload": "false",
+        "payloadType": "bool",
+        "x": 120,
+        "y": 100,
+        "wires": [
+            [
+                "c97d8c352ed9ab64"
+            ]
+        ]
+    },
+    {
+        "id": "3e5002aa495e7d41",
+        "type": "rpi-gpio out",
+        "z": "abe5c2cc63e46b70",
+        "name": "",
+        "pin": "21",
+        "set": true,
+        "level": "0",
+        "freq": "",
+        "out": "out",
+        "bcm": true,
+        "x": 420,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "2b0fbfc497721cd8",
+        "type": "inject",
+        "z": "abe5c2cc63e46b70",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "3",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 750,
+        "y": 60,
+        "wires": [
+            [
+                "35f0fbf25bf796ae"
+            ]
+        ]
+    },
+    {
+        "id": "9bd92740ea940c9a",
+        "type": "ui_gauge",
+        "z": "abe5c2cc63e46b70",
+        "name": "",
+        "group": "788e1bea1606cb2e",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "Temperature (DHT11)",
+        "label": "C",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "50",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "diff": false,
+        "className": "",
+        "x": 1040,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "9587509022b7a8e7",
+        "type": "change",
+        "z": "abe5c2cc63e46b70",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "humidity",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1100,
+        "y": 360,
+        "wires": [
+            [
+                "c9e24ef6e7cce327"
+            ]
+        ]
+    },
+    {
+        "id": "c9e24ef6e7cce327",
+        "type": "ui_gauge",
+        "z": "abe5c2cc63e46b70",
+        "name": "",
+        "group": "788e1bea1606cb2e",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "gtype": "wave",
+        "title": "Humidity (DHT11)",
+        "label": "%",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "100",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "diff": false,
+        "className": "",
+        "x": 1230,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "725b1bf7dc3ba6d6",
+        "type": "comment",
+        "z": "abe5c2cc63e46b70",
+        "name": "2.2. Show readings using Gauges",
+        "info": "",
+        "x": 1070,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "6e10841723d8e5d4",
+        "type": "function",
+        "z": "abe5c2cc63e46b70",
+        "name": "function 3",
+        "func": "var msg1 = {};\nvar msg2 = {};\nmsg1.payload = msg.payload;\nmsg1.topic = \"Temperature\";\nmsg2.payload = msg.humidity;\nmsg2.topic = \"Humidity\";\nreturn [msg1, msg2];\n",
+        "outputs": 2,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 820,
+        "y": 440,
+        "wires": [
+            [
+                "841e0cc658d8096a"
+            ],
+            [
+                "841e0cc658d8096a"
+            ]
+        ]
+    },
+    {
+        "id": "841e0cc658d8096a",
+        "type": "ui_chart",
+        "z": "abe5c2cc63e46b70",
+        "name": "",
+        "group": "da96b184ac761774",
+        "order": 11,
+        "width": 0,
+        "height": 0,
+        "label": "Temperature and Humidity",
+        "chartType": "line",
+        "legend": "true",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "0",
+        "ymax": "100",
+        "removeOlder": 1,
+        "removeOlderPoints": "",
+        "removeOlderUnit": "60",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 1160,
+        "y": 460,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "35f0fbf25bf796ae",
+        "type": "dht-emu",
+        "z": "abe5c2cc63e46b70",
+        "name": "",
+        "topic": "dht-emu",
+        "dht": "11",
+        "pintype": 1,
+        "pin": 4,
+        "x": 680,
+        "y": 280,
+        "wires": [
+            [
+                "6e10841723d8e5d4",
+                "27b6da41d03a84ee",
+                "ce5eb37d367a829c",
+                "dffe735a91c5c6a2"
+            ]
+        ]
+    },
+    {
+        "id": "8a4adf449ce79d58",
+        "type": "http request",
+        "z": "abe5c2cc63e46b70",
+        "name": "",
+        "method": "POST",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "https://influx-prod-24-prod-eu-west-2.grafana.net/api/v1/push/influx/write",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "basic",
+        "senderr": false,
+        "headers": [],
+        "x": 790,
+        "y": 540,
+        "wires": [
+            [
+                "2c8ad8ab20b22332"
+            ]
+        ]
+    },
+    {
+        "id": "27b6da41d03a84ee",
+        "type": "function",
+        "z": "abe5c2cc63e46b70",
+        "name": "function 66",
+        "func": "// Sample data\nconst temp2 = msg.payload;\nconst temp1 = msg.humidity;\n\n// Define measurement, tags, and fields\nconst measurement = \"node_red_data\";\nconst tags = \"source=raspberrypi\";\nconst fields = `temperature=${temp1},humidity=${temp2}`;\n\n// Combine into Influx Line Protocol format\nconst influxData = `${measurement},${tags} ${fields}`;\n\n// Send the formatted data to the next node\nmsg.payload = influxData;\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 570,
+        "y": 600,
+        "wires": [
+            [
+                "8a4adf449ce79d58"
+            ]
+        ]
+    },
+    {
+        "id": "2c8ad8ab20b22332",
+        "type": "debug",
+        "z": "abe5c2cc63e46b70",
+        "name": "debug 146",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1010,
+        "y": 540,
+        "wires": []
+    },
+    {
+        "id": "ce5eb37d367a829c",
+        "type": "function",
+        "z": "abe5c2cc63e46b70",
+        "name": "function 68",
+        "func": "// Ensure the humidity value is a number\nvar humid = Number(msg.humidity);\n\nif (isNaN(humid)) {\n    // Handle the case where the humidity value is not a number\n    node.error(\"Humidity value is not a number\");\n    return null;\n}\n\n// Convert the humidity value to a fixed-point notation\nmsg.payload = humid.toFixed(2);\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 930,
+        "y": 300,
+        "wires": [
+            [
+                "9587509022b7a8e7"
+            ]
+        ]
+    },
+    {
+        "id": "dffe735a91c5c6a2",
+        "type": "function",
+        "z": "abe5c2cc63e46b70",
+        "name": "function 69",
+        "func": "// Ensure the humidity value is a number\nvar temp = Number(msg.payload);\n\nif (isNaN(temp)) {\n    // Handle the case where the humidity value is not a number\n    node.error(\"Temperature value is not a number\");\n    return null;\n}\n\n// Convert the humidity value to a fixed-point notation\nmsg.payload = temp.toFixed(2);\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 870,
+        "y": 220,
+        "wires": [
+            [
+                "9bd92740ea940c9a"
+            ]
+        ]
+    },
+    {
+        "id": "c51520f6cff008c4",
+        "type": "http request",
+        "z": "abe5c2cc63e46b70",
+        "name": "",
+        "method": "POST",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "https://influx-prod-24-prod-eu-west-2.grafana.net/api/v1/push/influx/write",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "basic",
+        "senderr": false,
+        "headers": [],
+        "x": 330,
+        "y": 360,
+        "wires": [
+            [
+                "c6bd65be40045fe3"
+            ]
+        ]
+    },
+    {
+        "id": "24ae26887642dbd1",
+        "type": "function",
+        "z": "abe5c2cc63e46b70",
+        "name": "function 70",
+        "func": "// Sample data\nconst led_status = msg.payload;\n\n// Define measurement, tags, and fields\nconst measurement = \"node_red_data\";\nconst tags = \"source=raspberrypi\";\nconst fields = `Led_Status=${led_status}`;\n\n// Combine into Influx Line Protocol format\nconst influxData = `${measurement},${tags} ${fields}`;\n\n// Send the formatted data to the next node\nmsg.payload = influxData;\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 110,
+        "y": 420,
+        "wires": [
+            [
+                "c51520f6cff008c4"
+            ]
+        ]
+    },
+    {
+        "id": "c6bd65be40045fe3",
+        "type": "debug",
+        "z": "abe5c2cc63e46b70",
+        "name": "debug 150",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 370,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "788e1bea1606cb2e",
+        "type": "ui_group",
+        "name": "MQTT LED",
+        "tab": "d12c7c461e80f80a",
+        "order": 1,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "558d974b449cf58c",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "da96b184ac761774",
+        "type": "ui_group",
+        "name": "Building 57",
+        "tab": "0a97529e6ca3721c",
+        "order": 1,
+        "disp": true,
+        "width": "12",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "d12c7c461e80f80a",
+        "type": "ui_tab",
+        "name": "MQTT",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "0a97529e6ca3721c",
+        "type": "ui_tab",
+        "name": "RMIT",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    }
+]

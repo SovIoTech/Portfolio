@@ -1,0 +1,737 @@
+[
+    {
+        "id": "f8ad2dc83f2f6da5",
+        "type": "sqlite",
+        "z": "22abb2a4b04473e7",
+        "mydb": "2fd3071130fbf37c",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "",
+        "x": 1740,
+        "y": 940,
+        "wires": [
+            [
+                "6d8b7de191a03b02"
+            ]
+        ]
+    },
+    {
+        "id": "bab17b14eea1f92c",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "time",
+        "func": "msg.topic = `\n  SELECT \n    MAX(timestamp) as latest_timestamp \n  FROM \n    new_readings;\n`;\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1450,
+        "y": 920,
+        "wires": [
+            [
+                "f8ad2dc83f2f6da5"
+            ]
+        ]
+    },
+    {
+        "id": "1c7b32b4177452a9",
+        "type": "sqlite",
+        "z": "22abb2a4b04473e7",
+        "mydb": "2fd3071130fbf37c",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "",
+        "x": 1740,
+        "y": 1000,
+        "wires": [
+            [
+                "83ef85b7fe78b257"
+            ]
+        ]
+    },
+    {
+        "id": "6d8b7de191a03b02",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "LatestTime",
+        "func": "flow.set(\"LatestTime\",msg.payload[0].latest_timestamp)\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2010,
+        "y": 940,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "afe40df6a393d5af",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "7day",
+        "func": "let latestTimestamp = flow.get('LatestTime');\nlet meter = flow.get('username');\n\n// Convert latestTimestamp to a Date object\nlet latestDate = new Date(latestTimestamp.replace(' ', 'T'));\nlet sevenDaysAgo = new Date(latestDate.getTime());\nsevenDaysAgo.setDate(latestDate.getDate() - 6); // 7 days ago\n\n// Generate a list of the last 7 days with day names\nlet days = [];\nconst dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];\n\nfor (let i = 0; i < 7; i++) {\n    let date = new Date(sevenDaysAgo.getTime());\n    date.setDate(sevenDaysAgo.getDate() + i);\n    \n    days.push({\n        start: date.toISOString().slice(0, 10), // Format: 'YYYY-MM-DD'\n        end: date.toISOString().slice(0, 10), // Format: 'YYYY-MM-DD' (Same as start for daily data)\n        dayName: dayNames[date.getDay()] // Get day name based on the day of the week (0-6)\n    });\n}\n\n// Create a CTE (Common Table Expression) for the days\nlet dayList = days.map(day => `SELECT '${day.start} 00:00:00' as start_period, '${day.end} 23:59:59' as end_period, '${day.dayName}' as day_name`).join(' UNION ALL ');\n\nmsg.topic = `\n  WITH days AS (\n    ${dayList}\n  )\n  SELECT \n    days.start_period,\n    days.end_period,\n    days.day_name as period,\n    COALESCE(SUM(new_readings.power_W), 0) as total_power_W,\n    COALESCE(SUM(new_readings.consumption_kWh), 0) as total_consumption_kWh\n  FROM \n    days\n  LEFT JOIN\n    new_readings\n  ON \n    new_readings.timestamp >= days.start_period AND\n    new_readings.timestamp <= days.end_period AND\n    new_readings.meter_id = '${meter}'\n  GROUP BY \n    days.start_period, days.end_period, days.day_name\n  ORDER BY \n    days.start_period ASC;\n`;\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1450,
+        "y": 1000,
+        "wires": [
+            [
+                "1c7b32b4177452a9"
+            ]
+        ]
+    },
+    {
+        "id": "e6dbf37d96141ed2",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "8week",
+        "func": "let latestTimestamp = flow.get('LatestTime');\nlet meter = flow.get('username');\n\n// Convert latestTimestamp to a Date object\nlet latestDate = new Date(latestTimestamp.replace(' ', 'T'));\nlet eightWeeksAgo = new Date(latestDate.getTime());\neightWeeksAgo.setDate(latestDate.getDate() - 56); // 8 weeks ago\n\n// Generate a list of the last 8 weeks with week numbers\nlet weeks = [];\nfor (let i = 0; i < 8; i++) {\n    let startOfWeek = new Date(eightWeeksAgo.getTime());\n    startOfWeek.setDate(eightWeeksAgo.getDate() + (i * 7));\n    let endOfWeek = new Date(startOfWeek.getTime());\n    endOfWeek.setDate(startOfWeek.getDate() + 7);\n    \n    weeks.push({\n        weekNumber: 8 - i, // Week number in descending order\n        start: startOfWeek.toISOString().slice(0, 10), // Format: 'YYYY-MM-DD'\n        end: endOfWeek.toISOString().slice(0, 10) // Format: 'YYYY-MM-DD'\n    });\n}\n\n// Create a CTE (Common Table Expression) for the weeks\nlet weekList = weeks.map(week => `\n    SELECT 'Week No. ${week.weekNumber}' as period,\n           '${week.start} 00:00:00' as start_period,\n           '${week.end} 00:00:00' as end_period`\n).join(' UNION ALL ');\n\nmsg.topic = `\n  WITH weeks AS (\n    ${weekList}\n  )\n  SELECT \n    weeks.period,\n    COALESCE(SUM(new_readings.power_W), 0) as total_power_W,\n    COALESCE(SUM(new_readings.consumption_kWh), 0) as total_consumption_kWh\n  FROM \n    weeks\n  LEFT JOIN\n    new_readings\n  ON \n    new_readings.timestamp >= weeks.start_period AND\n    new_readings.timestamp < weeks.end_period AND\n    new_readings.meter_id = '${meter}'\n  GROUP BY \n    weeks.period\n  ORDER BY \n    weeks.period ASC;\n`;\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1450,
+        "y": 1040,
+        "wires": [
+            [
+                "1c7b32b4177452a9"
+            ]
+        ]
+    },
+    {
+        "id": "1f8017ed6bd59a1d",
+        "type": "ui-button",
+        "z": "22abb2a4b04473e7",
+        "group": "7fc4b50a2caf6d9a",
+        "name": "",
+        "label": "Last 12 Hour",
+        "order": 4,
+        "width": "4",
+        "height": "2",
+        "emulateClick": false,
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "iconPosition": "left",
+        "payload": "1",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 1210,
+        "y": 920,
+        "wires": [
+            [
+                "38b024670b7db2b7",
+                "bab17b14eea1f92c",
+                "8efb8918b9c13286"
+            ]
+        ]
+    },
+    {
+        "id": "10a7ad914c79be19",
+        "type": "ui-button",
+        "z": "22abb2a4b04473e7",
+        "group": "7fc4b50a2caf6d9a",
+        "name": "",
+        "label": "Last 7 Days",
+        "order": 5,
+        "width": "4",
+        "height": "2",
+        "emulateClick": false,
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "iconPosition": "left",
+        "payload": "1",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 1210,
+        "y": 960,
+        "wires": [
+            [
+                "afe40df6a393d5af",
+                "38b024670b7db2b7",
+                "bab17b14eea1f92c"
+            ]
+        ]
+    },
+    {
+        "id": "3a0ebf534355d4e4",
+        "type": "ui-button",
+        "z": "22abb2a4b04473e7",
+        "group": "7fc4b50a2caf6d9a",
+        "name": "",
+        "label": "Last 8 Weeks",
+        "order": 3,
+        "width": "4",
+        "height": "2",
+        "emulateClick": false,
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "iconPosition": "left",
+        "payload": "1",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 1220,
+        "y": 1000,
+        "wires": [
+            [
+                "e6dbf37d96141ed2",
+                "38b024670b7db2b7",
+                "bab17b14eea1f92c"
+            ]
+        ]
+    },
+    {
+        "id": "38b024670b7db2b7",
+        "type": "change",
+        "z": "22abb2a4b04473e7",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "[]",
+                "tot": "json"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1520,
+        "y": 1080,
+        "wires": [
+            [
+                "8e2c1ad94a3c3102",
+                "196284800e8396f6"
+            ]
+        ]
+    },
+    {
+        "id": "fd57673310fb9369",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "function 40",
+        "func": "let latestTimestamp = flow.get(\"LatestTime\");\nlet meter = flow.get('username');\n\nmsg.topic = `\n  SELECT \n    meter_id,\n    strftime('%H:%M:%S', timestamp) as period, \n    power_W as total_power_W,\n    consumption_kWh as total_consumption_kWh \n  FROM \n    new_readings \n  WHERE \n    meter_id = '${meter}' AND\n    timestamp = (\n      SELECT MAX(timestamp) \n      FROM new_readings \n      WHERE meter_id = '${meter}'\n    );\n`;\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1650,
+        "y": 1160,
+        "wires": [
+            [
+                "77ce8269296fb0af"
+            ]
+        ]
+    },
+    {
+        "id": "e807380109be2443",
+        "type": "inject",
+        "z": "22abb2a4b04473e7",
+        "name": "",
+        "props": [
+            {
+                "p": "time",
+                "v": "",
+                "vt": "date"
+            },
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "1",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "Dynamic2",
+        "payloadType": "flow",
+        "x": 1220,
+        "y": 1140,
+        "wires": [
+            [
+                "179d1e03c73ec772"
+            ]
+        ]
+    },
+    {
+        "id": "77ce8269296fb0af",
+        "type": "sqlite",
+        "z": "22abb2a4b04473e7",
+        "mydb": "2fd3071130fbf37c",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "Smart_Meter_Readings",
+        "x": 1850,
+        "y": 1160,
+        "wires": [
+            [
+                "b00eb9a8da109af4",
+                "980904e66a3a5165",
+                "349a349ac34c6ad8"
+            ]
+        ]
+    },
+    {
+        "id": "58dcd5a4b354fc55",
+        "type": "ui-button",
+        "z": "22abb2a4b04473e7",
+        "group": "7fc4b50a2caf6d9a",
+        "name": "",
+        "label": "Start Live Data",
+        "order": 6,
+        "width": "4",
+        "height": "2",
+        "emulateClick": false,
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "iconPosition": "left",
+        "payload": "1",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 1360,
+        "y": 1220,
+        "wires": [
+            [
+                "3548d253e6ae7e58",
+                "38b024670b7db2b7"
+            ]
+        ]
+    },
+    {
+        "id": "179d1e03c73ec772",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "function 41",
+        "func": "if (msg.hasOwnProperty('time') && msg.time !== null &&\n    msg.hasOwnProperty('payload') && msg.payload !== false) {\n    return msg; // Send the message only if both time and payload exist\n} else {\n    return null; // Optionally, handle the case where one or both values are missing\n}\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1470,
+        "y": 1160,
+        "wires": [
+            [
+                "fd57673310fb9369",
+                "bab17b14eea1f92c"
+            ]
+        ]
+    },
+    {
+        "id": "c23a6c0155b68fd2",
+        "type": "ui-button",
+        "z": "22abb2a4b04473e7",
+        "group": "7fc4b50a2caf6d9a",
+        "name": "",
+        "label": "Clear/Stop Live Data",
+        "order": 7,
+        "width": "4",
+        "height": "2",
+        "emulateClick": false,
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "iconPosition": "left",
+        "payload": "1",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 1380,
+        "y": 1260,
+        "wires": [
+            [
+                "214154e6616019d3",
+                "38b024670b7db2b7"
+            ]
+        ]
+    },
+    {
+        "id": "3548d253e6ae7e58",
+        "type": "change",
+        "z": "22abb2a4b04473e7",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "Dynamic2",
+                "pt": "flow",
+                "to": "true",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1730,
+        "y": 1220,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "214154e6616019d3",
+        "type": "change",
+        "z": "22abb2a4b04473e7",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "Dynamic2",
+                "pt": "flow",
+                "to": "false",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1730,
+        "y": 1260,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "b00eb9a8da109af4",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "function 42",
+        "func": "// Assuming msg.payload is an array of objects with meter_id, hhmmss, and power_W fields\nlet barData = msg.payload.map(item => {\n    // Prepare data for bar graph\n    return {\n        category: item.period, // Label for each bar (time)\n        value: item.total_consumption_kWh // Value for each bar (power_W)\n    };\n});\n\nmsg = {\n    topic: \"Consumption kWh\",\n    payload: barData\n};\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2230,
+        "y": 940,
+        "wires": [
+            [
+                "196284800e8396f6"
+            ]
+        ]
+    },
+    {
+        "id": "980904e66a3a5165",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "function 43",
+        "func": "// Assuming msg.payload is an array of objects with meter_id, hhmmss, and power_W fields\nlet barData = msg.payload.map(item => {\n    // Prepare data for bar graph\n    return {\n        category: item.period, // Label for each bar (time)\n        value: item.total_power_W // Value for each bar (power_W)\n    };\n});\n\nmsg = {\n    topic: \"Power\",\n    payload: barData\n};\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2250,
+        "y": 1000,
+        "wires": [
+            [
+                "8e2c1ad94a3c3102"
+            ]
+        ]
+    },
+    {
+        "id": "196284800e8396f6",
+        "type": "ui-chart",
+        "z": "22abb2a4b04473e7",
+        "group": "7fc4b50a2caf6d9a",
+        "name": "",
+        "label": "Consumption Table",
+        "order": 1,
+        "chartType": "bar",
+        "category": "category",
+        "categoryType": "property",
+        "xAxisLabel": "Timestamp",
+        "xAxisProperty": "",
+        "xAxisPropertyType": "msg",
+        "xAxisType": "category",
+        "xAxisFormat": "",
+        "xAxisFormatType": "auto",
+        "yAxisLabel": "Consumption (kWh)",
+        "yAxisProperty": "value",
+        "ymin": "0",
+        "ymax": "",
+        "action": "append",
+        "pointShape": "circle",
+        "pointRadius": 4,
+        "showLegend": false,
+        "removeOlder": "6",
+        "removeOlderUnit": "3600",
+        "removeOlderPoints": "",
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "width": "12",
+        "height": "6",
+        "className": "",
+        "x": 2330,
+        "y": 1060,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "8e2c1ad94a3c3102",
+        "type": "ui-chart",
+        "z": "22abb2a4b04473e7",
+        "group": "7fc4b50a2caf6d9a",
+        "name": "",
+        "label": "Power Table",
+        "order": 2,
+        "chartType": "bar",
+        "category": "category",
+        "categoryType": "property",
+        "xAxisLabel": "Timestamp",
+        "xAxisProperty": "",
+        "xAxisPropertyType": "msg",
+        "xAxisType": "category",
+        "xAxisFormat": "",
+        "xAxisFormatType": "auto",
+        "yAxisLabel": "Power (W)",
+        "yAxisProperty": "value",
+        "ymin": "",
+        "ymax": "",
+        "action": "append",
+        "pointShape": "circle",
+        "pointRadius": 4,
+        "showLegend": false,
+        "removeOlder": "6",
+        "removeOlderUnit": "3600",
+        "removeOlderPoints": "",
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "width": "12",
+        "height": "6",
+        "className": "",
+        "x": 2310,
+        "y": 1100,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "e8b9fbebc6e750f9",
+        "type": "inject",
+        "z": "22abb2a4b04473e7",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 1200,
+        "y": 1100,
+        "wires": [
+            [
+                "c23a6c0155b68fd2"
+            ]
+        ]
+    },
+    {
+        "id": "83ef85b7fe78b257",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "function 44",
+        "func": "// Check if msg.payload is an array\nif (Array.isArray(msg.payload)) {\n    // Iterate through each object in the array\n    msg.payload.forEach(obj => {\n        // Check if the current object has period_start and period_end properties\n        if (obj.hasOwnProperty('period_start') && obj.hasOwnProperty('period_end')) {\n            // Format period_start and period_end to dd:hh:mm:ss\n            let startDate = new Date(obj.period_start);\n            let endDate = new Date(obj.period_end);\n\n            let startFormatted = `${(startDate.getDate()).toString().padStart(2, '0')}:${startDate.getHours().toString().padStart(2, '0')}:${startDate.getMinutes().toString().padStart(2, '0')}:${startDate.getSeconds().toString().padStart(2, '0')}`;\n            let endFormatted = `${(endDate.getDate()).toString().padStart(2, '0')}:${endDate.getHours().toString().padStart(2, '0')}:${endDate.getMinutes().toString().padStart(2, '0')}:${endDate.getSeconds().toString().padStart(2, '0')}`;\n\n            // Set obj.period with formatted period range\n            obj.period = `${startFormatted} -- ${endFormatted}`;\n        } else {\n            // Handle case where period_start and period_end are missing in any object\n            node.warn('An object in msg.payload does not contain expected period_start and period_end properties.');\n        }\n    });\n} else {\n    // Handle case where msg.payload is not an array\n    node.warn('msg.payload is not an array.');\n}\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1990,
+        "y": 1020,
+        "wires": [
+            [
+                "980904e66a3a5165",
+                "c5a9a4f14ffb774f",
+                "b00eb9a8da109af4"
+            ]
+        ]
+    },
+    {
+        "id": "8efb8918b9c13286",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "12hr",
+        "func": "let latestTimestamp = flow.get('LatestTime'); // Example timestamp from your table\nlet meter = flow.get('username'); // Assuming 'username' is fetched from flow context\n\n// Convert latestTimestamp to a Date object\nlet latestDate = new Date(latestTimestamp.replace(' ', 'T'));\n\n// Calculate 12 hours ago from the latest timestamp\nlet twelveHoursAgo = new Date(latestDate.getTime() - (12 * 60 * 60 * 1000)); // 12 hours ago in milliseconds\n\n// Generate a list of the last 12 hours\nlet hours = [];\nlet periods = []; // Array to store mmddhhmm formatted periods\n\nfor (let i = 0; i < 12; i++) {\n    let hourStart = new Date(twelveHoursAgo.getTime() + ((i + 5) * 60 * 60 * 1000)); // Start of current hour\n    let hourEnd = new Date(twelveHoursAgo.getTime() + ((i + 6) * 60 * 60 * 1000)); // End of current hour\n\n    let hourStartStr = hourStart.toISOString().slice(0, 19).replace('T', ' '); // Format: 'YYYY-MM-DD HH:00:00'\n    let hourEndStr = hourEnd.toISOString().slice(0, 19).replace('T', ' '); // Format: 'YYYY-MM-DD HH:00:00'\n\n    // Format period_start and period_end in mmddhhmm format\n    let periodStartFormatted = `${(hourStart.getMonth() + 1).toString().padStart(2, '0')}${hourStart.getDate().toString().padStart(2, '0')}${hourStart.getHours().toString().padStart(2, '0')}${hourStart.getMinutes().toString().padStart(2, '0')}`;\n    let periodEndFormatted = `${(hourEnd.getMonth() + 1).toString().padStart(2, '0')}${hourEnd.getDate().toString().padStart(2, '0')}${hourEnd.getHours().toString().padStart(2, '0')}${hourEnd.getMinutes().toString().padStart(2, '0')}`;\n\n    hours.push({ start: hourStartStr, end: hourEndStr }); // Store formatted start and end times\n    periods.push(`${periodStartFormatted}-${periodEndFormatted}`); // Store mmddhhmm formatted periods\n}\n\n// Create a CTE (Common Table Expression) for the hours\nlet hourList = hours.map(hour => `SELECT '${hour.start}' as period_start, '${hour.end}' as period_end`).join(' UNION ALL ');\n\nmsg.topic = `\nWITH hours AS (\n  ${hourList}\n)\nSELECT \n  hours.period_start,\n  hours.period_end,\n  COALESCE(SUM(new_readings.power_W), 0) as total_power_W,\n  COALESCE(SUM(new_readings.consumption_kWh), 0) as total_consumption_kWh\nFROM \n  hours\nLEFT JOIN\n  new_readings\nON \n  strftime('%Y-%m-%d %H:%M:%S', new_readings.timestamp) >= hours.period_start AND\n  strftime('%Y-%m-%d %H:%M:%S', new_readings.timestamp) < hours.period_end AND\n  new_readings.meter_id = '${meter}'\nGROUP BY \n  hours.period_start, hours.period_end\nORDER BY \n  hours.period_start ASC;\n`;\n\n// Assign periods array to msg.period for mmddhhmm formatted periods\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1450,
+        "y": 960,
+        "wires": [
+            [
+                "1c7b32b4177452a9"
+            ]
+        ]
+    },
+    {
+        "id": "c5a9a4f14ffb774f",
+        "type": "debug",
+        "z": "22abb2a4b04473e7",
+        "name": "debug 372",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 2430,
+        "y": 960,
+        "wires": []
+    },
+    {
+        "id": "349a349ac34c6ad8",
+        "type": "debug",
+        "z": "22abb2a4b04473e7",
+        "name": "debug 373",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 2090,
+        "y": 1220,
+        "wires": []
+    },
+    {
+        "id": "2fd3071130fbf37c",
+        "type": "sqlitedb",
+        "db": "C:\\Users\\big\\Music\\Smart_Readings.db",
+        "mode": "RWC"
+    },
+    {
+        "id": "7fc4b50a2caf6d9a",
+        "type": "ui-group",
+        "name": "Bar",
+        "page": "9bb8d282867f8d78",
+        "width": "12",
+        "height": "1",
+        "order": 1,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false"
+    },
+    {
+        "id": "9bb8d282867f8d78",
+        "type": "ui-page",
+        "name": "BarGraphs",
+        "ui": "0ac1bc2a2c2b617b",
+        "path": "/page6",
+        "icon": "graph",
+        "layout": "grid",
+        "theme": "0d92c765bfad87e6",
+        "order": 3,
+        "className": "",
+        "visible": "true",
+        "disabled": "false"
+    },
+    {
+        "id": "0ac1bc2a2c2b617b",
+        "type": "ui-base",
+        "name": "My Dashboard",
+        "path": "/dashboard",
+        "includeClientData": true,
+        "acceptsClientConfig": [
+            "ui-notification",
+            "ui-control"
+        ],
+        "showPathInSidebar": false,
+        "showPageTitle": true,
+        "navigationStyle": "default",
+        "titleBarStyle": "default"
+    },
+    {
+        "id": "0d92c765bfad87e6",
+        "type": "ui-theme",
+        "name": "Basic Blue Theme",
+        "colors": {
+            "surface": "#4d58ff",
+            "primary": "#0094ce",
+            "bgPage": "#fbf9f9",
+            "groupBg": "#ffffff",
+            "groupOutline": "#cccccc"
+        },
+        "sizes": {
+            "pagePadding": "12px",
+            "groupGap": "12px",
+            "groupBorderRadius": "4px",
+            "widgetGap": "12px"
+        }
+    }
+]

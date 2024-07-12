@@ -1,0 +1,2642 @@
+[
+    {
+        "id": "22abb2a4b04473e7",
+        "type": "tab",
+        "label": "Flow 2",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "82aa298d7014eb8b",
+        "type": "inject",
+        "z": "22abb2a4b04473e7",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "1",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 170,
+        "y": 140,
+        "wires": [
+            [
+                "cccf816318f51752"
+            ]
+        ]
+    },
+    {
+        "id": "cccf816318f51752",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "function 9",
+        "func": "\nlet now = new Date();\n\nlet formattedTimestamp = now.getFullYear() + '-' +\n    ('0' + (now.getMonth() + 1)).slice(-2) + '-' +\n    ('0' + now.getDate()).slice(-2) + ' ' +\n    ('0' + now.getHours()).slice(-2) + ':' +\n    ('0' + now.getMinutes()).slice(-2) + ':' +\n    ('0' + now.getSeconds()).slice(-2);\n\n// Array to store messages for each meter\nlet messages = [];\n\n\nconst meterIDs = ['MTR001', 'MTR002', 'MTR003', 'MTR004'];\nmeterIDs.forEach(meterID => {\n    let lastConsumption = context.get(meterID + 'lastConsumption') || 0;\n    let increment = Math.random() * 0.1 + 0.01;\n    let consumption = parseFloat((lastConsumption + increment).toFixed(2));\n\n    // Update context\n    context.set(meterID + 'lastConsumption', consumption);\n\n    let power = Math.floor(Math.random() * 1000 + 100); // Random power\n\n    // Build the message object for SQL insertion\n    messages.push({\n        payload: {\n            meter_id: meterID,\n            timestamp: formattedTimestamp,\n            power_W: power,\n            consumption_kWh: consumption\n        },\n        topic: `INSERT INTO new_readings (meter_id, timestamp, power_W, consumption_kWh) VALUES ('${meterID}', '${formattedTimestamp}', ${power}, ${consumption})`\n    });\n});\n\nreturn [messages]; // Return an array of messages\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 320,
+        "y": 180,
+        "wires": [
+            [
+                "d41034dcf9ee2198"
+            ]
+        ]
+    },
+    {
+        "id": "d41034dcf9ee2198",
+        "type": "sqlite",
+        "z": "22abb2a4b04473e7",
+        "mydb": "2fd3071130fbf37c",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "Smart_Meter_Readings",
+        "x": 510,
+        "y": 220,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "72bb4316f02ce62c",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "function 10",
+        "func": "// Construct the SQL query to fetch the last value for a specific meter ID\nvar meter = flow.get('username'); // Assuming 'username' is the flow variable for the meter ID\n\nmsg.topic = `SELECT * FROM new_readings WHERE meter_id = '${meter}' ORDER BY timestamp DESC LIMIT 1`;\n// Replace 'your_table' with your actual table name\n// Replace 'timestamp_column' with the column that indicates the timestamp or ID\n\n// No payload needed for this case\nmsg.payload = null;\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 310,
+        "y": 260,
+        "wires": [
+            [
+                "e6f16e256eedce99"
+            ]
+        ]
+    },
+    {
+        "id": "b7eb9175dace3420",
+        "type": "inject",
+        "z": "22abb2a4b04473e7",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "1",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 150,
+        "y": 240,
+        "wires": [
+            [
+                "72bb4316f02ce62c"
+            ]
+        ]
+    },
+    {
+        "id": "e6f16e256eedce99",
+        "type": "sqlite",
+        "z": "22abb2a4b04473e7",
+        "mydb": "2fd3071130fbf37c",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "Smart_Meter_Readings",
+        "x": 510,
+        "y": 300,
+        "wires": [
+            [
+                "501c396bfdcf37e9",
+                "f93d16e537eb651b",
+                "1f315fd21c8030bd"
+            ]
+        ]
+    },
+    {
+        "id": "de67af7e096647f7",
+        "type": "ui-template",
+        "z": "22abb2a4b04473e7",
+        "group": "fb2e77ec2c2a5dd1",
+        "page": "",
+        "ui": "",
+        "name": "Power And Consumption Box",
+        "order": 1,
+        "width": "5",
+        "height": "5",
+        "head": "",
+        "format": "<template>\n  <div class=\"box-container\">\n    <!-- First custom box -->\n    <div class=\"custom-box\"\n         :style=\"{ backgroundColor: hover1 ? hoverColor1 : defaultColor1, boxShadow: boxShadow }\"\n         @click=\"boxClicked(1)\"\n         @mouseover=\"hover1 = true\"\n         @mouseleave=\"hover1 = false\">\n      <div class=\"custom-header\">{{ msg['custom-header1'] }}</div>\n      <div class=\"value\">{{ msg.payload1 }}</div>\n      <div class=\"meter-id\" v-if=\"hover1 && meterid !== 'NaN'\">Meter ID: {{ meterid }}</div>\n    </div>\n\n    <!-- Space between boxes -->\n    <div class=\"space\"></div>\n\n    <!-- Second custom box -->\n    <div class=\"custom-box\"\n         :style=\"{ backgroundColor: hover2 ? hoverColor2 : defaultColor2, boxShadow: boxShadow }\"\n         @click=\"boxClicked(2)\"\n         @mouseover=\"hover2 = true\"\n         @mouseleave=\"hover2 = false\">\n      <div class=\"custom-header\">{{ msg['custom-header2'] }}</div>\n      <div class=\"value\">{{ msg.payload2 }}</div>\n      <div class=\"meter-id\" v-if=\"hover2 && meterid !== 'NaN'\">Meter ID: {{ meterid }}</div>\n    </div>\n  </div>\n</template>\n\n<script>\nexport default {\n  props: {\n    msg: {\n      type: Object,\n      required: true\n    }\n  },\n  data() {\n    return {\n      hover1: false,\n      hover2: false,\n      defaultColor1: '#f46e8c', // Medium pink for first box\n      hoverColor1: '#f4457d',   // Dark pink on hover for first box\n      defaultColor2: '#f4ce42', // Light golden color for second box\n      hoverColor2: '#f4b742',   // Darker golden color on hover for second box\n      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', // Shadow effect\n      fontFamily: 'Consolas',  // Font family for Consolas\n    };\n  },\n  computed: {\n    meterid() {\n      return this.getMeterId(this.msg['meter-id']);\n    }\n  },\n  methods: {\n    boxClicked(boxNumber) {\n      if (boxNumber === 1) {\n        // Handle click for first box\n        this.$emit('box-clicked', this.msg);\n      } else if (boxNumber === 2) {\n        // Handle click for second box\n        this.$emit('box-clicked', this.msg);\n      }\n    },\n    getMeterId(meterId) {\n      if (typeof meterId === 'string') {\n        return meterId;\n      } else if (typeof meterId === 'number') {\n        return meterId.toString();\n      } else {\n        return 'NaN'; // Return 'NaN' if meter-id is not a string or number\n      }\n    }\n  }\n};\n</script>\n\n<style scoped>\n/* Scoped styles for the component */\n.box-container {\n  display: flex;\n  justify-content: space-between; /* Adjust to change space between boxes */\n  align-items: center; /* Center items vertically */\n}\n\n.custom-box {\n  width: 400px; /* Adjust width as needed */\n  height: 300px; /* Adjust height as needed */\n  padding: 10px;\n  border: 1px solid #ccc;\n  cursor: pointer;\n  transition: background-color 0.3s ease, box-shadow 0.3s ease; /* Transition effect for background and box-shadow */\n  border-radius: 10px; /* Rounded corners */\n  font-family: Consolas, monospace; /* Consolas font */\n}\n\n.custom-header {\n  font-size: 35px;\n  font-weight: bold;\n  margin-bottom: 10px;\n}\n\n.value {\n  font-size: 80px;\n  font-weight: bold; /* Bold font */\n  text-align: center;\n  margin-top: 20px;\n}\n\n.meter-id {\n  font-size: 30px;\n  margin-top: 5px;\n  text-align: center;\n  color: #333; /* Darker color for meter ID */\n}\n\n.space {\n  width: 165px; /* Adjust space width between boxes */\n}\n</style>\n",
+        "storeOutMessages": true,
+        "passthru": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 980,
+        "y": 300,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "501c396bfdcf37e9",
+        "type": "change",
+        "z": "22abb2a4b04473e7",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "meter-id",
+                "pt": "msg",
+                "to": "payload[0].meter_id",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "payload1",
+                "pt": "msg",
+                "to": "payload[0].power_W",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "custom-header1",
+                "pt": "msg",
+                "to": "Power(W)",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "payload2",
+                "pt": "msg",
+                "to": "payload[0].consumption_kWh",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "custom-header2",
+                "pt": "msg",
+                "to": "Consumption(kWh)",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 740,
+        "y": 300,
+        "wires": [
+            [
+                "1d195cfc024a090b",
+                "de67af7e096647f7"
+            ]
+        ]
+    },
+    {
+        "id": "1d195cfc024a090b",
+        "type": "debug",
+        "z": "22abb2a4b04473e7",
+        "name": "debug 354",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 910,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "f93d16e537eb651b",
+        "type": "ui-template",
+        "z": "22abb2a4b04473e7",
+        "group": "fb2e77ec2c2a5dd1",
+        "page": "",
+        "ui": "",
+        "name": "",
+        "order": 9,
+        "width": 0,
+        "height": 0,
+        "head": "",
+        "format": "<template>\n  <div>\n    <!-- Provide an input text box to search the content -->\n    <v-text-field v-model=\"search\" label=\"Search\" prepend-inner-icon=\"mdi-magnify\" single-line variant=\"outlined\"\n      hide-details></v-text-field>\n    <v-row class=\"static-header\">\n      <v-col cols=\"1\" class=\"text-center header-cell font-weight-bold  text-decoration-underline\">Meter ID</v-col>\n      <v-col cols=\"5\" class=\"text-center header-cell font-weight-bold  text-decoration-underline\">Timestamp</v-col>\n      <v-col cols=\"3\" class=\"text-center header-cell font-weight-bold  text-decoration-underline\">Power (W)</v-col>\n      <v-col cols=\"3\" class=\"text-center header-cell font-weight-bold  text-decoration-underline\">Consumption (kWh)</v-col>\n    </v-row>\n\n\n    <v-data-table v-model:search=\"search\" :items=\"meterData\" :headers=\"headers\">\n      <template v-slot:header.meter_id>\n        <div class=\"text-center\"> </div>\n      </template>\n      <template v-slot:header.timestamp>\n        <div class=\"text-center\"> </div>\n      </template>\n      <template v-slot:header.power_W>\n        <div class=\"text-center\">Power (W)</div>\n      </template>\n      <template v-slot:header.consumption_kWh>\n        <div class=\"text-center\">Consumption (kWh)</div>\n      </template>\n\n      <template v-slot:item.meter_id=\"{ item }\">\n        <!-- Add a meter icon before the Meter ID -->\n        {{ item.meter_id }}\n      </template>\n\n      <template v-slot:item.timestamp=\"{ item }\">\n        <!-- Format the timestamp nicely -->\n        {{ new Date(item.timestamp).toLocaleString() }}\n      </template>\n\n      <template v-slot:item.power_W=\"{ item }\">\n        {{ item.power_W }} W\n      </template>\n\n      <template v-slot:item.consumption_kWh=\"{ item }\">\n        {{ item.consumption_kWh }} kWh\n      </template>\n    </v-data-table>\n\n    <v-row justify=\"end\" class=\"mt-2\">\n     <!-- <v-btn @click=\"downloadCSV\" color=\"green\" class=\"ml-2\">Download CSV</v-btn> -->\n      <v-btn @click=\"clearTable\" color=\"red\" class=\"ml-2\">Clear Table</v-btn>\n    </v-row>\n  </div>\n</template>\n\n<script>\nexport default {\n  data() {\n    return {\n      search: '',\n      headers: [\n        { text: 'Meter ID', value: 'meter_id' },\n        { text: 'Timestamp', value: 'timestamp' },\n        { text: 'Power (W)', value: 'power_W' },\n        { text: 'Consumption (kWh)', value: 'consumption_kWh' }\n      ],\n      meterData: JSON.parse(localStorage.getItem('meterData')) || []\n    }\n  },\n  methods: {\n    addNewData: function (newData) {\n      // Append new data to the top of the table\n      this.meterData.unshift(newData);\n      // Update localStorage\n      localStorage.setItem('meterData', JSON.stringify(this.meterData));\n    },\n    clearTable: function () {\n      this.meterData = [];\n      localStorage.removeItem('meterData');\n    },\n    downloadCSV: function () {\n      const headers = ['Meter ID', 'Timestamp', 'Power (W)', 'Consumption (kWh)'];\n      const rows = this.meterData.map(item => [\n        item.meter_id,\n        new Date(item.timestamp).toLocaleString(),\n        item.power_W,\n        item.consumption_kWh\n      ]);\n\n      let csvContent = 'data:text/csv;charset=utf-8,';\n      csvContent += headers.join(',') + '\\n';\n      rows.forEach(rowArray => {\n        let row = rowArray.join(',');\n        csvContent += row + '\\n';\n      });\n\n      const encodedUri = encodeURI(csvContent);\n      const link = document.createElement('a');\n      link.setAttribute('href', encodedUri);\n      link.setAttribute('download', 'power_consumption_data.csv');\n      document.body.appendChild(link);\n      link.click();\n      document.body.removeChild(link);\n    }\n  },\n  watch: {\n    msg: {\n      handler(newData) {\n        if (newData && newData.payload) {\n          const newPayload = newData.payload.map(data => ({\n            meter_id: data.meter_id,\n            timestamp: data.timestamp,\n            power_W: data.power_W,\n            consumption_kWh: data.consumption_kWh\n          }));\n          newPayload.forEach(this.addNewData);\n        }\n      },\n      deep: true\n    }\n  }\n}\n</script>\n\n<style scoped>\n  .text-center {\n    text-align: center;\n  }\n</style>\n",
+        "storeOutMessages": true,
+        "passthru": false,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 740,
+        "y": 360,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "1f315fd21c8030bd",
+        "type": "debug",
+        "z": "22abb2a4b04473e7",
+        "name": "debug 356",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 750,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "282ade2c50f57acb",
+        "type": "inject",
+        "z": "22abb2a4b04473e7",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 1300,
+        "y": 360,
+        "wires": [
+            [
+                "a8cb7e5a091f9a86"
+            ]
+        ]
+    },
+    {
+        "id": "a8cb7e5a091f9a86",
+        "type": "http request",
+        "z": "22abb2a4b04473e7",
+        "name": "",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "https://sms-api29.p.rapidapi.com/numbers",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [
+            {
+                "keyType": "other",
+                "keyValue": "X-RapidAPI-Key",
+                "valueType": "other",
+                "valueValue": "d6db517286msh0790a7ae359e600p1924eejsn14b527097fe3"
+            },
+            {
+                "keyType": "other",
+                "keyValue": "X-RapidAPI-Host",
+                "valueType": "other",
+                "valueValue": "sms-api29.p.rapidapi.com"
+            }
+        ],
+        "x": 1470,
+        "y": 380,
+        "wires": [
+            [
+                "7a73d286a49ccf38"
+            ]
+        ]
+    },
+    {
+        "id": "7a73d286a49ccf38",
+        "type": "debug",
+        "z": "22abb2a4b04473e7",
+        "name": "debug 360",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1660,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "d1a21359da916702",
+        "type": "inject",
+        "z": "22abb2a4b04473e7",
+        "name": "",
+        "props": [],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 1290,
+        "y": 280,
+        "wires": [
+            [
+                "387706b8e9336d29",
+                "f58ad9f1882e998e"
+            ]
+        ]
+    },
+    {
+        "id": "f8dba13ddc6a7271",
+        "type": "debug",
+        "z": "22abb2a4b04473e7",
+        "name": "debug 361",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 2060,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "cbf7c67a32456bf3",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "Username/Password/TimeStamp",
+        "func": "var x = msg.payload.UserName;\nvar y = msg.payload.Password;\n\nmsg.payload = [\n    new Date().toISOString(),\n    x,\n    y\n];\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1560,
+        "y": 100,
+        "wires": [
+            [
+                "89f861c1dd7acc33"
+            ]
+        ]
+    },
+    {
+        "id": "2226771afc7fd0a1",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "Flow Username",
+        "func": "flow.set(\"username\",msg.payload.UserName)\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1500,
+        "y": 140,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "b67f6ce14e36d987",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "Flow Password",
+        "func": "flow.set(\"password\",msg.payload.Password)\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1500,
+        "y": 180,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "8e607bce59aca3da",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "Username",
+        "func": "if (msg.payload[0] == flow.get(\"username\") || msg.payload[1] == flow.get(\"username\")|| msg.payload[2] == flow.get(\"username\")|| msg.payload[3] == flow.get(\"username\") || msg.payload[4] == flow.get(\"username\")) \n{\n msg.payload = 2;\n  \n    return msg;\n}\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1670,
+        "y": 240,
+        "wires": [
+            [
+                "7fee9970bc94c093",
+                "f075f8040a3a3b2d"
+            ]
+        ]
+    },
+    {
+        "id": "6011f9fe0771d11b",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "Password",
+        "func": "if (msg.payload[0] == flow.get(\"password\") || msg.payload[1] == flow.get(\"password\")|| msg.payload[2] == flow.get(\"password\")|| msg.payload[3] == flow.get(\"password\")|| msg.payload[4] == flow.get(\"password\")) \n{\n msg.payload = 3;\n  \n    return msg;\n}\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1660,
+        "y": 280,
+        "wires": [
+            [
+                "bf56dc3a20a17b07",
+                "f075f8040a3a3b2d"
+            ]
+        ]
+    },
+    {
+        "id": "7fee9970bc94c093",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "Username",
+        "func": "flow.set(\"checkUser\",msg.payload)\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1870,
+        "y": 220,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "bf56dc3a20a17b07",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "Password",
+        "func": "flow.set(\"checkPass\",msg.payload)\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1860,
+        "y": 300,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "f075f8040a3a3b2d",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "function 17",
+        "func": "if(flow.get(\"checkUser\")==2 && flow.get(\"checkPass\")==3)\n{\n    msg.payload = \"Login Successful\";\n    return msg;\n}\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1860,
+        "y": 260,
+        "wires": [
+            [
+                "1083d35ab2bdb957",
+                "9c2bff8c5a00141b"
+            ]
+        ]
+    },
+    {
+        "id": "1083d35ab2bdb957",
+        "type": "change",
+        "z": "22abb2a4b04473e7",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "{\"groups\":{\"show\":[\"Tables:Table\",\"BarGraphs:Bar\",\"Graphs:Test\",\"Logout:Logout\"],\"hide\":[\"Login:LoginPage\"]},\"pages\":{\"show\":[\"Tables\",\"BarGraphs\",\"Graphs\",\"Logout\"],\"hide\":[\"Login\"]}}",
+                "tot": "json"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 2100,
+        "y": 260,
+        "wires": [
+            [
+                "19ade93fa567cc1d",
+                "f67111881ea44d9b"
+            ]
+        ]
+    },
+    {
+        "id": "fcd2ec0c9268bf72",
+        "type": "inject",
+        "z": "22abb2a4b04473e7",
+        "name": "",
+        "props": [],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 1870,
+        "y": 340,
+        "wires": [
+            [
+                "a3772b5ddce8a6bf"
+            ]
+        ]
+    },
+    {
+        "id": "a3772b5ddce8a6bf",
+        "type": "change",
+        "z": "22abb2a4b04473e7",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "{\"groups\":{\"hide\":[\"Tables:Table\",\"BarGraphs:Bar\",\"Graphs:Test\",\"Logout:Logout\"],\"show\":[\"Login:LoginPage\"]},\"pages\":{\"hide\":[\"Tables\",\"BarGraphs\",\"Graphs\",\"Logout\"],\"show\":[\"Login\"]}}",
+                "tot": "json"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 2100,
+        "y": 300,
+        "wires": [
+            [
+                "5edc460a97d8c40b"
+            ]
+        ]
+    },
+    {
+        "id": "89f861c1dd7acc33",
+        "type": "GSheet",
+        "z": "22abb2a4b04473e7",
+        "creds": "0bee0facddc43963",
+        "method": "append",
+        "action": "",
+        "sheet": "1ctsdbrAIVb4RfCgor4JiFqk16gSNFdeZ1w2lX048iMA",
+        "cells": "Sheet1!A2:A5",
+        "flatten": true,
+        "name": "Login and SignUp ",
+        "x": 1830,
+        "y": 100,
+        "wires": [
+            [
+                "f8dba13ddc6a7271"
+            ]
+        ]
+    },
+    {
+        "id": "387706b8e9336d29",
+        "type": "GSheet",
+        "z": "22abb2a4b04473e7",
+        "creds": "0bee0facddc43963",
+        "method": "get",
+        "action": "",
+        "sheet": "1ctsdbrAIVb4RfCgor4JiFqk16gSNFdeZ1w2lX048iMA",
+        "cells": "Sheet1!B1:B10",
+        "flatten": true,
+        "name": "Username",
+        "x": 1490,
+        "y": 240,
+        "wires": [
+            [
+                "8e607bce59aca3da"
+            ]
+        ]
+    },
+    {
+        "id": "f58ad9f1882e998e",
+        "type": "GSheet",
+        "z": "22abb2a4b04473e7",
+        "creds": "0bee0facddc43963",
+        "method": "get",
+        "action": "",
+        "sheet": "1ctsdbrAIVb4RfCgor4JiFqk16gSNFdeZ1w2lX048iMA",
+        "cells": "Sheet1!C2:C10",
+        "flatten": true,
+        "name": "Password",
+        "x": 1480,
+        "y": 280,
+        "wires": [
+            [
+                "6011f9fe0771d11b"
+            ]
+        ]
+    },
+    {
+        "id": "985d4e5b4be64504",
+        "type": "ui-form",
+        "z": "22abb2a4b04473e7",
+        "name": "",
+        "group": "91e8b498fc287806",
+        "label": "Sign Up Form",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "options": [
+            {
+                "label": "Meter No.",
+                "key": "UserName",
+                "type": "text",
+                "required": true,
+                "rows": null
+            },
+            {
+                "label": "Password",
+                "key": "Password",
+                "type": "password",
+                "required": true,
+                "rows": null
+            }
+        ],
+        "formValue": {
+            "UserName": "",
+            "Password": ""
+        },
+        "payload": "",
+        "submit": "Signup",
+        "cancel": "Cancel",
+        "resetOnSubmit": true,
+        "topic": "topic",
+        "topicType": "msg",
+        "splitLayout": "",
+        "className": "",
+        "x": 1230,
+        "y": 100,
+        "wires": [
+            [
+                "cbf7c67a32456bf3"
+            ]
+        ]
+    },
+    {
+        "id": "dd9dace840bd2f3c",
+        "type": "ui-form",
+        "z": "22abb2a4b04473e7",
+        "name": "",
+        "group": "91e8b498fc287806",
+        "label": "Login Form",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "options": [
+            {
+                "label": "Meter No.",
+                "key": "UserName",
+                "type": "text",
+                "required": true,
+                "rows": null
+            },
+            {
+                "label": "Password",
+                "key": "Password",
+                "type": "password",
+                "required": true,
+                "rows": null
+            }
+        ],
+        "formValue": {
+            "UserName": "",
+            "Password": ""
+        },
+        "payload": "",
+        "submit": "Login",
+        "cancel": "Cancel",
+        "resetOnSubmit": true,
+        "topic": "topic",
+        "topicType": "msg",
+        "splitLayout": "",
+        "className": "",
+        "x": 1230,
+        "y": 180,
+        "wires": [
+            [
+                "2226771afc7fd0a1",
+                "b67f6ce14e36d987",
+                "387706b8e9336d29",
+                "f58ad9f1882e998e"
+            ]
+        ]
+    },
+    {
+        "id": "9c2bff8c5a00141b",
+        "type": "ui-notification",
+        "z": "22abb2a4b04473e7",
+        "ui": "0ac1bc2a2c2b617b",
+        "position": "top right",
+        "colorDefault": true,
+        "color": "#000000",
+        "displayTime": "3",
+        "showCountdown": true,
+        "outputs": 1,
+        "allowDismiss": true,
+        "dismissText": "Close",
+        "raw": false,
+        "className": "",
+        "name": "",
+        "x": 2100,
+        "y": 220,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "19ade93fa567cc1d",
+        "type": "ui-control",
+        "z": "22abb2a4b04473e7",
+        "name": "",
+        "ui": "0ac1bc2a2c2b617b",
+        "events": "all",
+        "x": 2300,
+        "y": 260,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "5edc460a97d8c40b",
+        "type": "ui-control",
+        "z": "22abb2a4b04473e7",
+        "name": "",
+        "ui": "0ac1bc2a2c2b617b",
+        "events": "all",
+        "x": 2300,
+        "y": 300,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "09ce92db1d4f249c",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "function 23",
+        "func": "// Retrieve start and stop timestamps from flow variables\nvar startTime = flow.get('StartTime');\nvar stopTime = flow.get('EndTime');\nvar meter = flow.get('username');\n\n// Convert flow timestamp format \"2024-07-01T18:52\" to database format \"2024-07-01 18:52:00\"\nfunction convertToDbFormat(timestamp) {\n    return timestamp.replace('T', ' ') + ':00';\n}\n\nvar startDbFormat = convertToDbFormat(startTime);\nvar stopDbFormat = convertToDbFormat(stopTime);\n\n// Generate SQL query\nvar query = `SELECT meter_id, timestamp, power_W, consumption_kWh \n             FROM new_readings \n             WHERE meter_id = '${meter}' \n             AND timestamp BETWEEN '${startDbFormat}' AND '${stopDbFormat}'`;\n\n// Set the query in the message topic\nmsg.topic = query;\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 330,
+        "y": 700,
+        "wires": [
+            [
+                "ab0de584eb39068e"
+            ]
+        ]
+    },
+    {
+        "id": "de74ecf03e4a52f8",
+        "type": "debug",
+        "z": "22abb2a4b04473e7",
+        "name": "debug 367",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 830,
+        "y": 620,
+        "wires": []
+    },
+    {
+        "id": "7488fd2c644a7452",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "function 24",
+        "func": "// Fields for the CSV file\nconst fields = ['meter_id', 'timestamp', 'power_W', 'consumption_kWh'];\nconst rows = msg.payload;\n\n// Initialize total variables\nlet totalPowerW = 0;\nlet totalConsumptionKWh = 0;\n\n// Create CSV content\nlet csvContent = fields.join(\",\") + \"\\n\";\n\nrows.forEach(row => {\n    csvContent += `${row.meter_id},${row.timestamp},${row.power_W},${row.consumption_kWh}\\n`;\n\n    // Accumulate totals\n    totalPowerW += row.power_W;\n    totalConsumptionKWh += row.consumption_kWh;\n});\n\n// Add last row for totals\ncsvContent += `,Total,${totalPowerW},${totalConsumptionKWh}\\n`;\n\n// Store CSV content in message payload\nmsg.payload = csvContent;\nmsg.file = csvContent;\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 830,
+        "y": 720,
+        "wires": [
+            [
+                "9c873b985d0e7fac"
+            ]
+        ]
+    },
+    {
+        "id": "ef5b17541e9d8a62",
+        "type": "ui-notification",
+        "z": "22abb2a4b04473e7",
+        "ui": "0ac1bc2a2c2b617b",
+        "position": "top right",
+        "colorDefault": true,
+        "color": "#000000",
+        "displayTime": "3",
+        "showCountdown": true,
+        "outputs": 1,
+        "allowDismiss": true,
+        "dismissText": "Close",
+        "raw": false,
+        "className": "",
+        "name": "File Saved",
+        "x": 1550,
+        "y": 720,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "9c873b985d0e7fac",
+        "type": "file",
+        "z": "22abb2a4b04473e7",
+        "name": "",
+        "filename": "C:\\Users\\big\\Music\\DataFile.csv",
+        "filenameType": "str",
+        "appendNewline": false,
+        "createDir": true,
+        "overwriteFile": "true",
+        "encoding": "none",
+        "x": 1070,
+        "y": 720,
+        "wires": [
+            [
+                "8852e7e69364dc8b",
+                "088623a0fdead346"
+            ]
+        ]
+    },
+    {
+        "id": "bf480da0e6d3e938",
+        "type": "ui-text-input",
+        "z": "22abb2a4b04473e7",
+        "group": "fb2e77ec2c2a5dd1",
+        "name": "",
+        "label": "Start Time",
+        "order": 10,
+        "width": "2",
+        "height": "1",
+        "topic": "start",
+        "topicType": "str",
+        "mode": "datetime-local",
+        "delay": 300,
+        "passthru": false,
+        "sendOnDelay": false,
+        "sendOnBlur": true,
+        "sendOnEnter": true,
+        "className": "",
+        "x": 170,
+        "y": 540,
+        "wires": [
+            [
+                "5c2c4a6449ace10a"
+            ]
+        ]
+    },
+    {
+        "id": "6582e39331b358a0",
+        "type": "ui-text-input",
+        "z": "22abb2a4b04473e7",
+        "group": "fb2e77ec2c2a5dd1",
+        "name": "",
+        "label": "End Time",
+        "order": 11,
+        "width": "2",
+        "height": "1",
+        "topic": "end",
+        "topicType": "str",
+        "mode": "datetime-local",
+        "delay": 300,
+        "passthru": true,
+        "sendOnDelay": false,
+        "sendOnBlur": true,
+        "sendOnEnter": true,
+        "className": "",
+        "x": 180,
+        "y": 620,
+        "wires": [
+            [
+                "c5d151fd553613cb"
+            ]
+        ]
+    },
+    {
+        "id": "da98a8893acaa6c4",
+        "type": "debug",
+        "z": "22abb2a4b04473e7",
+        "name": "debug 365",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 530,
+        "y": 580,
+        "wires": []
+    },
+    {
+        "id": "5c2c4a6449ace10a",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "Start Time",
+        "func": "flow.set(\"StartTime\",msg.payload)\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 350,
+        "y": 540,
+        "wires": [
+            [
+                "da98a8893acaa6c4"
+            ]
+        ]
+    },
+    {
+        "id": "c5d151fd553613cb",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "End Time",
+        "func": "flow.set(\"EndTime\",msg.payload)\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 360,
+        "y": 620,
+        "wires": [
+            [
+                "da98a8893acaa6c4"
+            ]
+        ]
+    },
+    {
+        "id": "52d349fe302fe904",
+        "type": "ui-button",
+        "z": "22abb2a4b04473e7",
+        "group": "fb2e77ec2c2a5dd1",
+        "name": "",
+        "label": "Download Data",
+        "order": 12,
+        "width": "2",
+        "height": "1",
+        "emulateClick": false,
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "iconPosition": "left",
+        "payload": "1",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 140,
+        "y": 700,
+        "wires": [
+            [
+                "09ce92db1d4f249c"
+            ]
+        ]
+    },
+    {
+        "id": "8852e7e69364dc8b",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "function 25",
+        "func": "// Clear specific context variables\nflow.set('StartTime', null);\nflow.set('EndTime', null);\n\n// Check if msg.payload exists and is not empty\nif (msg.payload && typeof msg.payload === 'string' && msg.payload.trim() !== '') {\n    msg.payload = \"CSV File Saved Successfully to C:\\Users\\big\\Music\\DataFile.csv\";\n} else {\n    node.warn(\"Failed to save CSV file.\");\n    msg.payload = \"Failed to save CSV file.\";\n}\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1310,
+        "y": 720,
+        "wires": [
+            [
+                "ef5b17541e9d8a62"
+            ]
+        ]
+    },
+    {
+        "id": "088623a0fdead346",
+        "type": "debug",
+        "z": "22abb2a4b04473e7",
+        "name": "debug 368",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1290,
+        "y": 640,
+        "wires": []
+    },
+    {
+        "id": "ab0de584eb39068e",
+        "type": "sqlite",
+        "z": "22abb2a4b04473e7",
+        "mydb": "2fd3071130fbf37c",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "",
+        "x": 580,
+        "y": 700,
+        "wires": [
+            [
+                "de74ecf03e4a52f8",
+                "7488fd2c644a7452"
+            ]
+        ]
+    },
+    {
+        "id": "c0f419fa0e290980",
+        "type": "sqlite",
+        "z": "22abb2a4b04473e7",
+        "mydb": "2fd3071130fbf37c",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "",
+        "x": 680,
+        "y": 940,
+        "wires": [
+            [
+                "86ae1378b7592d71"
+            ]
+        ]
+    },
+    {
+        "id": "09d4c3db0c2bddde",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "function 18",
+        "func": "msg.topic = `\n  SELECT \n    MAX(timestamp) as latest_timestamp \n  FROM \n    new_readings;\n`;\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 410,
+        "y": 940,
+        "wires": [
+            [
+                "c0f419fa0e290980"
+            ]
+        ]
+    },
+    {
+        "id": "a716644c1372c61d",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "function 19",
+        "func": "let latestTimestamp = flow.get(\"LatestTime\");\nvar meter = flow.get('username');\n\nmsg.topic = `\n  SELECT \n    meter_id,\n    strftime('%H%M%S', timestamp) as hhmmss, \n    power_W, \n    consumption_kWh\n  FROM \n    new_readings \n  WHERE \n    meter_id = '${meter}' AND\n    timestamp BETWEEN datetime('${latestTimestamp}', '-1 hour') AND '${latestTimestamp}'\n  ORDER BY \n    timestamp ASC;\n`;\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 410,
+        "y": 980,
+        "wires": [
+            [
+                "ca0cd67e2a76020b"
+            ]
+        ]
+    },
+    {
+        "id": "ca0cd67e2a76020b",
+        "type": "sqlite",
+        "z": "22abb2a4b04473e7",
+        "mydb": "2fd3071130fbf37c",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "",
+        "x": 680,
+        "y": 1000,
+        "wires": [
+            [
+                "9c0136cb81ec3623",
+                "d00dcd64ea91680b"
+            ]
+        ]
+    },
+    {
+        "id": "9c0136cb81ec3623",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "function 20",
+        "func": "// Assuming msg.payload is an array of objects with meter_id, hhmmss, and power_W fields\nlet xyPairs = msg.payload.map(item => {\n    // Convert hhmmss to hh:mm:ss format\n    let hours = item.hhmmss.substring(0, 2);\n    let minutes = item.hhmmss.substring(2, 4);\n    let seconds = item.hhmmss.substring(4);\n    let formattedTime = `${hours}:${minutes}:${seconds}`;\n    \n    return {\n        x: formattedTime,\n        y: item.power_W\n    };\n});\n\nmsg = {\n    topic: \"Power\",\n    payload: xyPairs\n};\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 950,
+        "y": 1080,
+        "wires": [
+            [
+                "35994fa3b5e214c7"
+            ]
+        ]
+    },
+    {
+        "id": "35994fa3b5e214c7",
+        "type": "ui-chart",
+        "z": "22abb2a4b04473e7",
+        "group": "a79d3ad3d5ad784d",
+        "name": "",
+        "label": "Power",
+        "order": 1,
+        "chartType": "line",
+        "category": "topic",
+        "categoryType": "msg",
+        "xAxisLabel": "Timestamp",
+        "xAxisProperty": "",
+        "xAxisPropertyType": "msg",
+        "xAxisType": "time",
+        "xAxisFormat": "",
+        "xAxisFormatType": "auto",
+        "yAxisLabel": "Power (W)",
+        "yAxisProperty": "",
+        "ymin": "",
+        "ymax": "",
+        "action": "append",
+        "pointShape": "circle",
+        "pointRadius": 4,
+        "showLegend": true,
+        "removeOlder": "6",
+        "removeOlderUnit": "3600",
+        "removeOlderPoints": "",
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "width": "12",
+        "height": "6",
+        "className": "",
+        "x": 810,
+        "y": 1120,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "86ae1378b7592d71",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "LatestTime",
+        "func": "flow.set(\"LatestTime\",msg.payload[0].latest_timestamp)\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 950,
+        "y": 940,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "bb8456148b490fd3",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "function 26",
+        "func": "let latestTimestamp = flow.get(\"LatestTime\");\nvar meter = flow.get('username');\n\nmsg.topic = `\n  SELECT \n    meter_id,\n    strftime('%H%M%S', timestamp) as hhmmss, \n    power_W,\n    consumption_kWh \n  FROM \n    new_readings \n  WHERE \n    meter_id = '${meter}' AND\n    timestamp BETWEEN datetime('${latestTimestamp}', '-6 hours') AND '${latestTimestamp}'\n  ORDER BY \n    timestamp ASC;\n`;\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 410,
+        "y": 1020,
+        "wires": [
+            [
+                "ca0cd67e2a76020b"
+            ]
+        ]
+    },
+    {
+        "id": "3a1281f42c0a7c99",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "function 27",
+        "func": "let latestTimestamp = flow.get(\"LatestTime\");\nvar meter = flow.get('username');\n\nmsg.topic = `\n  SELECT \n    meter_id,\n    strftime('%H%M%S', timestamp) as hhmmss, \n    power_W,\n    consumption_kWh\n  FROM \n    new_readings \n  WHERE \n    meter_id = '${meter}' AND\n    timestamp BETWEEN datetime('${latestTimestamp}', '-1 minute') AND '${latestTimestamp}'\n  ORDER BY \n    timestamp ASC;\n`;\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 410,
+        "y": 1060,
+        "wires": [
+            [
+                "ca0cd67e2a76020b"
+            ]
+        ]
+    },
+    {
+        "id": "890ca70e99fe706b",
+        "type": "ui-button",
+        "z": "22abb2a4b04473e7",
+        "group": "a79d3ad3d5ad784d",
+        "name": "",
+        "label": "Last 1 Hour",
+        "order": 4,
+        "width": "4",
+        "height": "2",
+        "emulateClick": false,
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "iconPosition": "left",
+        "payload": "1",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 150,
+        "y": 940,
+        "wires": [
+            [
+                "a716644c1372c61d",
+                "32d50e360c54c8f0",
+                "09d4c3db0c2bddde"
+            ]
+        ]
+    },
+    {
+        "id": "8f6ac3128445650e",
+        "type": "ui-button",
+        "z": "22abb2a4b04473e7",
+        "group": "a79d3ad3d5ad784d",
+        "name": "",
+        "label": "Last 6 Hours",
+        "order": 5,
+        "width": "4",
+        "height": "2",
+        "emulateClick": false,
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "iconPosition": "left",
+        "payload": "1",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 150,
+        "y": 980,
+        "wires": [
+            [
+                "bb8456148b490fd3",
+                "32d50e360c54c8f0",
+                "09d4c3db0c2bddde"
+            ]
+        ]
+    },
+    {
+        "id": "fe860c401c43ba8f",
+        "type": "ui-button",
+        "z": "22abb2a4b04473e7",
+        "group": "a79d3ad3d5ad784d",
+        "name": "",
+        "label": "Last 1 Minute",
+        "order": 3,
+        "width": "4",
+        "height": "2",
+        "emulateClick": false,
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "iconPosition": "left",
+        "payload": "1",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 160,
+        "y": 1020,
+        "wires": [
+            [
+                "3a1281f42c0a7c99",
+                "32d50e360c54c8f0",
+                "09d4c3db0c2bddde"
+            ]
+        ]
+    },
+    {
+        "id": "32d50e360c54c8f0",
+        "type": "change",
+        "z": "22abb2a4b04473e7",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "[]",
+                "tot": "json"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 420,
+        "y": 1100,
+        "wires": [
+            [
+                "35994fa3b5e214c7",
+                "d2709e60ca7eeafd"
+            ]
+        ]
+    },
+    {
+        "id": "d00dcd64ea91680b",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "function 28",
+        "func": "// Assuming msg.payload is an array of objects with meter_id, hhmmss, and power_W fields\nlet xyPairs = msg.payload.map(item => {\n    // Convert hhmmss to hh:mm:ss format\n    let hours = item.hhmmss.substring(0, 2);\n    let minutes = item.hhmmss.substring(2, 4);\n    let seconds = item.hhmmss.substring(4);\n    let formattedTime = `${hours}:${minutes}:${seconds}`;\n    \n    return {\n        x: formattedTime,\n        y: item.consumption_kWh\n    };\n});\n\nmsg = {\n    topic: \"Consumption\",\n    payload: xyPairs\n};\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 630,
+        "y": 1060,
+        "wires": [
+            [
+                "d2709e60ca7eeafd"
+            ]
+        ]
+    },
+    {
+        "id": "d2709e60ca7eeafd",
+        "type": "ui-chart",
+        "z": "22abb2a4b04473e7",
+        "group": "a79d3ad3d5ad784d",
+        "name": "",
+        "label": "Consumption kWh",
+        "order": 2,
+        "chartType": "line",
+        "category": "topic",
+        "categoryType": "msg",
+        "xAxisLabel": "Timestamp",
+        "xAxisProperty": "",
+        "xAxisPropertyType": "msg",
+        "xAxisType": "time",
+        "xAxisFormat": "",
+        "xAxisFormatType": "auto",
+        "yAxisLabel": "Consumption (kWh)",
+        "yAxisProperty": "",
+        "ymin": "",
+        "ymax": "",
+        "action": "append",
+        "pointShape": "circle",
+        "pointRadius": 4,
+        "showLegend": true,
+        "removeOlder": "6",
+        "removeOlderUnit": "3600",
+        "removeOlderPoints": "",
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "width": "12",
+        "height": "6",
+        "className": "",
+        "x": 810,
+        "y": 1160,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "8573f01148f08f65",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "function 29",
+        "func": "let latestTimestamp = flow.get(\"LatestTime\");\nvar meter = flow.get('username');\n\nmsg.topic = `\n  SELECT \n    meter_id,\n    strftime('%H%M%S', timestamp) as hhmmss, \n    power_W,\n    consumption_kWh \n  FROM \n    new_readings \n  WHERE \n    meter_id = '${meter}' AND\n    timestamp = (\n      SELECT MAX(timestamp) \n      FROM new_readings \n      WHERE meter_id = '${meter}'\n    );\n`;\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 550,
+        "y": 1200,
+        "wires": [
+            [
+                "7af7bcb1cb76bc7a"
+            ]
+        ]
+    },
+    {
+        "id": "13042363c2afc2a3",
+        "type": "inject",
+        "z": "22abb2a4b04473e7",
+        "name": "",
+        "props": [
+            {
+                "p": "time",
+                "v": "",
+                "vt": "date"
+            },
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "1",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "Dynamic",
+        "payloadType": "flow",
+        "x": 180,
+        "y": 1200,
+        "wires": [
+            [
+                "8c9d27d98b1cb435"
+            ]
+        ]
+    },
+    {
+        "id": "7af7bcb1cb76bc7a",
+        "type": "sqlite",
+        "z": "22abb2a4b04473e7",
+        "mydb": "2fd3071130fbf37c",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "Smart_Meter_Readings",
+        "x": 730,
+        "y": 1240,
+        "wires": [
+            [
+                "9c0136cb81ec3623",
+                "d00dcd64ea91680b"
+            ]
+        ]
+    },
+    {
+        "id": "df32342a70f47ae8",
+        "type": "ui-button",
+        "z": "22abb2a4b04473e7",
+        "group": "a79d3ad3d5ad784d",
+        "name": "",
+        "label": "Start Live Data",
+        "order": 6,
+        "width": "4",
+        "height": "2",
+        "emulateClick": false,
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "iconPosition": "left",
+        "payload": "1",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 320,
+        "y": 1300,
+        "wires": [
+            [
+                "7c39cf49b1db3c02",
+                "32d50e360c54c8f0"
+            ]
+        ]
+    },
+    {
+        "id": "8c9d27d98b1cb435",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "function 30",
+        "func": "if (msg.hasOwnProperty('time') && msg.time !== null &&\n    msg.hasOwnProperty('payload') && msg.payload !== false) {\n    return msg; // Send the message only if both time and payload exist\n} else {\n    return null; // Optionally, handle the case where one or both values are missing\n}\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 370,
+        "y": 1200,
+        "wires": [
+            [
+                "8573f01148f08f65"
+            ]
+        ]
+    },
+    {
+        "id": "b466b0a3c3df3845",
+        "type": "ui-button",
+        "z": "22abb2a4b04473e7",
+        "group": "a79d3ad3d5ad784d",
+        "name": "",
+        "label": "Clear/Stop Live Data",
+        "order": 7,
+        "width": "4",
+        "height": "2",
+        "emulateClick": false,
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "iconPosition": "left",
+        "payload": "1",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 340,
+        "y": 1340,
+        "wires": [
+            [
+                "dfb0201d211e3709",
+                "32d50e360c54c8f0"
+            ]
+        ]
+    },
+    {
+        "id": "7c39cf49b1db3c02",
+        "type": "change",
+        "z": "22abb2a4b04473e7",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "Dynamic",
+                "pt": "flow",
+                "to": "true",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 690,
+        "y": 1300,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "dfb0201d211e3709",
+        "type": "change",
+        "z": "22abb2a4b04473e7",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "Dynamic",
+                "pt": "flow",
+                "to": "false",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 690,
+        "y": 1340,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "5966d90e6dc17d51",
+        "type": "inject",
+        "z": "22abb2a4b04473e7",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 160,
+        "y": 1160,
+        "wires": [
+            [
+                "b466b0a3c3df3845"
+            ]
+        ]
+    },
+    {
+        "id": "571aa6a8ecf6086e",
+        "type": "ui-text",
+        "z": "22abb2a4b04473e7",
+        "group": "b6c1746151a66b32",
+        "order": 1,
+        "width": "3",
+        "height": "2",
+        "name": "User",
+        "label": "Meter Number",
+        "format": "{{msg.payload}}",
+        "layout": "row-left",
+        "style": true,
+        "font": "",
+        "fontSize": "30",
+        "color": "#6e8de7",
+        "className": "",
+        "x": 2310,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "f67111881ea44d9b",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "function 33",
+        "func": "var user = flow.get(\"username\");\nmsg.payload = user;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2150,
+        "y": 380,
+        "wires": [
+            [
+                "571aa6a8ecf6086e"
+            ]
+        ]
+    },
+    {
+        "id": "d4ce47cdb5d5f437",
+        "type": "ui-button",
+        "z": "22abb2a4b04473e7",
+        "group": "b6c1746151a66b32",
+        "name": "",
+        "label": "Log Out",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "emulateClick": false,
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "iconPosition": "left",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 1860,
+        "y": 380,
+        "wires": [
+            [
+                "a3772b5ddce8a6bf"
+            ]
+        ]
+    },
+    {
+        "id": "f8ad2dc83f2f6da5",
+        "type": "sqlite",
+        "z": "22abb2a4b04473e7",
+        "mydb": "2fd3071130fbf37c",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "",
+        "x": 1740,
+        "y": 920,
+        "wires": [
+            [
+                "6d8b7de191a03b02"
+            ]
+        ]
+    },
+    {
+        "id": "bab17b14eea1f92c",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "function 34",
+        "func": "msg.topic = `\n  SELECT \n    MAX(timestamp) as latest_timestamp \n  FROM \n    new_readings;\n`;\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1470,
+        "y": 920,
+        "wires": [
+            [
+                "f8ad2dc83f2f6da5"
+            ]
+        ]
+    },
+    {
+        "id": "8efb8918b9c13286",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "function 35",
+        "func": "let latestTimestamp = flow.get(\"LatestTime\");\nvar meter = flow.get('username');\n\nmsg.topic = `\n  SELECT \n    meter_id,\n    strftime('%H%M%S', timestamp) as hhmmss, \n    power_W, \n    consumption_kWh\n  FROM \n    new_readings \n  WHERE \n    meter_id = '${meter}' AND\n    timestamp BETWEEN datetime('${latestTimestamp}', '-1 hour') AND '${latestTimestamp}'\n  ORDER BY \n    timestamp ASC;\n`;\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1470,
+        "y": 960,
+        "wires": [
+            [
+                "1c7b32b4177452a9"
+            ]
+        ]
+    },
+    {
+        "id": "1c7b32b4177452a9",
+        "type": "sqlite",
+        "z": "22abb2a4b04473e7",
+        "mydb": "2fd3071130fbf37c",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "",
+        "x": 1740,
+        "y": 1000,
+        "wires": [
+            [
+                "980904e66a3a5165",
+                "b00eb9a8da109af4"
+            ]
+        ]
+    },
+    {
+        "id": "6d8b7de191a03b02",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "LatestTime",
+        "func": "flow.set(\"LatestTime\",msg.payload[0].latest_timestamp)\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2030,
+        "y": 920,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "afe40df6a393d5af",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "function 37",
+        "func": "let latestTimestamp = flow.get(\"LatestTime\");\nvar meter = flow.get('username');\n\nmsg.topic = `\n  SELECT \n    meter_id,\n    strftime('%H%M%S', timestamp) as hhmmss, \n    power_W,\n    consumption_kWh \n  FROM \n    new_readings \n  WHERE \n    meter_id = '${meter}' AND\n    timestamp BETWEEN datetime('${latestTimestamp}', '-6 hours') AND '${latestTimestamp}'\n  ORDER BY \n    timestamp ASC;\n`;\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1470,
+        "y": 1000,
+        "wires": [
+            [
+                "1c7b32b4177452a9"
+            ]
+        ]
+    },
+    {
+        "id": "e6dbf37d96141ed2",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "function 38",
+        "func": "let latestTimestamp = flow.get(\"LatestTime\");\nvar meter = flow.get('username');\n\nmsg.topic = `\n  SELECT \n    meter_id,\n    strftime('%H%M%S', timestamp) as hhmmss, \n    power_W,\n    consumption_kWh\n  FROM \n    new_readings \n  WHERE \n    meter_id = '${meter}' AND\n    timestamp BETWEEN datetime('${latestTimestamp}', '-1 minute') AND '${latestTimestamp}'\n  ORDER BY \n    timestamp ASC;\n`;\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1470,
+        "y": 1040,
+        "wires": [
+            [
+                "1c7b32b4177452a9"
+            ]
+        ]
+    },
+    {
+        "id": "1f8017ed6bd59a1d",
+        "type": "ui-button",
+        "z": "22abb2a4b04473e7",
+        "group": "7fc4b50a2caf6d9a",
+        "name": "",
+        "label": "Last 1 Hour",
+        "order": 4,
+        "width": "4",
+        "height": "2",
+        "emulateClick": false,
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "iconPosition": "left",
+        "payload": "1",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 1210,
+        "y": 920,
+        "wires": [
+            [
+                "8efb8918b9c13286",
+                "38b024670b7db2b7",
+                "bab17b14eea1f92c"
+            ]
+        ]
+    },
+    {
+        "id": "10a7ad914c79be19",
+        "type": "ui-button",
+        "z": "22abb2a4b04473e7",
+        "group": "7fc4b50a2caf6d9a",
+        "name": "",
+        "label": "Last 6 Hours",
+        "order": 5,
+        "width": "4",
+        "height": "2",
+        "emulateClick": false,
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "iconPosition": "left",
+        "payload": "1",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 1210,
+        "y": 960,
+        "wires": [
+            [
+                "afe40df6a393d5af",
+                "38b024670b7db2b7",
+                "bab17b14eea1f92c"
+            ]
+        ]
+    },
+    {
+        "id": "3a0ebf534355d4e4",
+        "type": "ui-button",
+        "z": "22abb2a4b04473e7",
+        "group": "7fc4b50a2caf6d9a",
+        "name": "",
+        "label": "Last 1 Minute",
+        "order": 3,
+        "width": "4",
+        "height": "2",
+        "emulateClick": false,
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "iconPosition": "left",
+        "payload": "1",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 1220,
+        "y": 1000,
+        "wires": [
+            [
+                "e6dbf37d96141ed2",
+                "38b024670b7db2b7",
+                "bab17b14eea1f92c"
+            ]
+        ]
+    },
+    {
+        "id": "38b024670b7db2b7",
+        "type": "change",
+        "z": "22abb2a4b04473e7",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "[]",
+                "tot": "json"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1480,
+        "y": 1080,
+        "wires": [
+            [
+                "8e2c1ad94a3c3102",
+                "196284800e8396f6"
+            ]
+        ]
+    },
+    {
+        "id": "fd57673310fb9369",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "function 40",
+        "func": "let latestTimestamp = flow.get(\"LatestTime\");\nvar meter = flow.get('username');\n\nmsg.topic = `\n  SELECT \n    meter_id,\n    strftime('%H%M%S', timestamp) as hhmmss, \n    power_W,\n    consumption_kWh \n  FROM \n    new_readings \n  WHERE \n    meter_id = '${meter}' AND\n    timestamp = (\n      SELECT MAX(timestamp) \n      FROM new_readings \n      WHERE meter_id = '${meter}'\n    );\n`;\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1650,
+        "y": 1160,
+        "wires": [
+            [
+                "77ce8269296fb0af"
+            ]
+        ]
+    },
+    {
+        "id": "e807380109be2443",
+        "type": "inject",
+        "z": "22abb2a4b04473e7",
+        "name": "",
+        "props": [
+            {
+                "p": "time",
+                "v": "",
+                "vt": "date"
+            },
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "1",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "Dynamic2",
+        "payloadType": "flow",
+        "x": 1220,
+        "y": 1140,
+        "wires": [
+            [
+                "179d1e03c73ec772"
+            ]
+        ]
+    },
+    {
+        "id": "77ce8269296fb0af",
+        "type": "sqlite",
+        "z": "22abb2a4b04473e7",
+        "mydb": "2fd3071130fbf37c",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "Smart_Meter_Readings",
+        "x": 1850,
+        "y": 1160,
+        "wires": [
+            [
+                "b00eb9a8da109af4",
+                "980904e66a3a5165"
+            ]
+        ]
+    },
+    {
+        "id": "58dcd5a4b354fc55",
+        "type": "ui-button",
+        "z": "22abb2a4b04473e7",
+        "group": "7fc4b50a2caf6d9a",
+        "name": "",
+        "label": "Start Live Data",
+        "order": 6,
+        "width": "4",
+        "height": "2",
+        "emulateClick": false,
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "iconPosition": "left",
+        "payload": "1",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 1360,
+        "y": 1220,
+        "wires": [
+            [
+                "3548d253e6ae7e58",
+                "38b024670b7db2b7"
+            ]
+        ]
+    },
+    {
+        "id": "179d1e03c73ec772",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "function 41",
+        "func": "if (msg.hasOwnProperty('time') && msg.time !== null &&\n    msg.hasOwnProperty('payload') && msg.payload !== false) {\n    return msg; // Send the message only if both time and payload exist\n} else {\n    return null; // Optionally, handle the case where one or both values are missing\n}\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1470,
+        "y": 1160,
+        "wires": [
+            [
+                "fd57673310fb9369"
+            ]
+        ]
+    },
+    {
+        "id": "c23a6c0155b68fd2",
+        "type": "ui-button",
+        "z": "22abb2a4b04473e7",
+        "group": "7fc4b50a2caf6d9a",
+        "name": "",
+        "label": "Clear/Stop Live Data",
+        "order": 7,
+        "width": "4",
+        "height": "2",
+        "emulateClick": false,
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "iconPosition": "left",
+        "payload": "1",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 1380,
+        "y": 1260,
+        "wires": [
+            [
+                "214154e6616019d3",
+                "38b024670b7db2b7"
+            ]
+        ]
+    },
+    {
+        "id": "3548d253e6ae7e58",
+        "type": "change",
+        "z": "22abb2a4b04473e7",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "Dynamic2",
+                "pt": "flow",
+                "to": "true",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1730,
+        "y": 1220,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "214154e6616019d3",
+        "type": "change",
+        "z": "22abb2a4b04473e7",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "Dynamic2",
+                "pt": "flow",
+                "to": "false",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1730,
+        "y": 1260,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "b00eb9a8da109af4",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "function 42",
+        "func": "// Assuming msg.payload is an array of objects with meter_id, hhmmss, and power_W fields\nlet barData = msg.payload.map(item => {\n    // Convert hhmmss to hh:mm:ss format if needed\n    let hours = item.hhmmss.substring(0, 2);\n    let minutes = item.hhmmss.substring(2, 4);\n    let seconds = item.hhmmss.substring(4);\n    let formattedTime = `${hours}:${minutes}:${seconds}`;\n\n    // Prepare data for bar graph\n    return {\n        category: formattedTime, // Label for each bar (time)\n        value: item.power_W // Value for each bar (power_W)\n    };\n});\n\nmsg = {\n    topic: \"Power\",\n    payload: barData\n};\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1950,
+        "y": 1040,
+        "wires": [
+            [
+                "196284800e8396f6"
+            ]
+        ]
+    },
+    {
+        "id": "980904e66a3a5165",
+        "type": "function",
+        "z": "22abb2a4b04473e7",
+        "name": "function 43",
+        "func": "// Assuming msg.payload is an array of objects with meter_id, hhmmss, and power_W fields\nlet barData = msg.payload.map(item => {\n    // Convert hhmmss to hh:mm:ss format if needed\n    let hours = item.hhmmss.substring(0, 2);\n    let minutes = item.hhmmss.substring(2, 4);\n    let seconds = item.hhmmss.substring(4);\n    let formattedTime = `${hours}:${minutes}:${seconds}`;\n\n    // Prepare data for bar graph\n    return {\n        category: formattedTime, // Label for each bar (time)\n        value: item.consumption_kWh // Value for each bar (power_W)\n    };\n});\n\nmsg = {\n    topic: \"Power\",\n    payload: barData\n};\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1950,
+        "y": 1120,
+        "wires": [
+            [
+                "8e2c1ad94a3c3102"
+            ]
+        ]
+    },
+    {
+        "id": "196284800e8396f6",
+        "type": "ui-chart",
+        "z": "22abb2a4b04473e7",
+        "group": "7fc4b50a2caf6d9a",
+        "name": "",
+        "label": "Power bar",
+        "order": 1,
+        "chartType": "bar",
+        "category": "category",
+        "categoryType": "property",
+        "xAxisLabel": "Timestamp",
+        "xAxisProperty": "",
+        "xAxisPropertyType": "msg",
+        "xAxisType": "category",
+        "xAxisFormat": "",
+        "xAxisFormatType": "auto",
+        "yAxisLabel": "Power (W)",
+        "yAxisProperty": "value",
+        "ymin": "0",
+        "ymax": "1500",
+        "action": "append",
+        "pointShape": "circle",
+        "pointRadius": 4,
+        "showLegend": false,
+        "removeOlder": "6",
+        "removeOlderUnit": "3600",
+        "removeOlderPoints": "",
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "width": "12",
+        "height": "6",
+        "className": "",
+        "x": 2150,
+        "y": 1060,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "8e2c1ad94a3c3102",
+        "type": "ui-chart",
+        "z": "22abb2a4b04473e7",
+        "group": "7fc4b50a2caf6d9a",
+        "name": "",
+        "label": "Consumption bar kWh",
+        "order": 2,
+        "chartType": "bar",
+        "category": "category",
+        "categoryType": "property",
+        "xAxisLabel": "Timestamp",
+        "xAxisProperty": "",
+        "xAxisPropertyType": "msg",
+        "xAxisType": "category",
+        "xAxisFormat": "",
+        "xAxisFormatType": "auto",
+        "yAxisLabel": "Consumption (kWh)",
+        "yAxisProperty": "value",
+        "ymin": "",
+        "ymax": "",
+        "action": "append",
+        "pointShape": "circle",
+        "pointRadius": 4,
+        "showLegend": true,
+        "removeOlder": "6",
+        "removeOlderUnit": "3600",
+        "removeOlderPoints": "",
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "width": "12",
+        "height": "6",
+        "className": "",
+        "x": 2180,
+        "y": 1100,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "e8b9fbebc6e750f9",
+        "type": "inject",
+        "z": "22abb2a4b04473e7",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 1200,
+        "y": 1100,
+        "wires": [
+            [
+                "c23a6c0155b68fd2"
+            ]
+        ]
+    },
+    {
+        "id": "790d45e7e708d12b",
+        "type": "comment",
+        "z": "22abb2a4b04473e7",
+        "name": "Table Setup",
+        "info": "Table Design\n\n",
+        "x": 330,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "6afe23c12ecb1670",
+        "type": "comment",
+        "z": "22abb2a4b04473e7",
+        "name": "Singup/Login Setup",
+        "info": "Table Design\n\n",
+        "x": 1190,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "6c5c924c1bacb7f4",
+        "type": "comment",
+        "z": "22abb2a4b04473e7",
+        "name": "Download CSV Setup",
+        "info": "Table Design\n\n",
+        "x": 280,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "2bf95aa2ae6981b0",
+        "type": "comment",
+        "z": "22abb2a4b04473e7",
+        "name": "LineGraphs Setup",
+        "info": "",
+        "x": 190,
+        "y": 840,
+        "wires": []
+    },
+    {
+        "id": "ef60c208c40db121",
+        "type": "comment",
+        "z": "22abb2a4b04473e7",
+        "name": "BarGraphs Setup",
+        "info": "",
+        "x": 1180,
+        "y": 840,
+        "wires": []
+    },
+    {
+        "id": "2fd3071130fbf37c",
+        "type": "sqlitedb",
+        "db": "C:\\Users\\big\\Music\\Smart_Readings.db",
+        "mode": "RWC"
+    },
+    {
+        "id": "fb2e77ec2c2a5dd1",
+        "type": "ui-group",
+        "name": "Table",
+        "page": "c466b7e4bb472f99",
+        "width": "6",
+        "height": "1",
+        "order": 1,
+        "showTitle": false,
+        "className": "",
+        "visible": "true",
+        "disabled": "false"
+    },
+    {
+        "id": "0bee0facddc43963",
+        "type": "gauth",
+        "name": "excel-696@excel-428012.iam.gserviceaccount.com"
+    },
+    {
+        "id": "91e8b498fc287806",
+        "type": "ui-group",
+        "name": "LoginPage",
+        "page": "e5735ec975615189",
+        "width": "6",
+        "height": "1",
+        "order": 1,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false"
+    },
+    {
+        "id": "0ac1bc2a2c2b617b",
+        "type": "ui-base",
+        "name": "My Dashboard",
+        "path": "/dashboard",
+        "includeClientData": true,
+        "acceptsClientConfig": [
+            "ui-notification",
+            "ui-control"
+        ],
+        "showPathInSidebar": false,
+        "showPageTitle": true,
+        "navigationStyle": "default",
+        "titleBarStyle": "default"
+    },
+    {
+        "id": "a79d3ad3d5ad784d",
+        "type": "ui-group",
+        "name": "Test",
+        "page": "f96aa3385eddc27a",
+        "width": "12",
+        "height": "1",
+        "order": 1,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false"
+    },
+    {
+        "id": "b6c1746151a66b32",
+        "type": "ui-group",
+        "name": "Logout",
+        "page": "719dcda32949998f",
+        "width": "6",
+        "height": "1",
+        "order": 1,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false"
+    },
+    {
+        "id": "7fc4b50a2caf6d9a",
+        "type": "ui-group",
+        "name": "Bar",
+        "page": "9bb8d282867f8d78",
+        "width": "12",
+        "height": "1",
+        "order": 1,
+        "showTitle": true,
+        "className": "",
+        "visible": "true",
+        "disabled": "false"
+    },
+    {
+        "id": "c466b7e4bb472f99",
+        "type": "ui-page",
+        "name": "Tables",
+        "ui": "0ac1bc2a2c2b617b",
+        "path": "/table",
+        "icon": "table",
+        "layout": "notebook",
+        "theme": "0d92c765bfad87e6",
+        "order": 2,
+        "className": "",
+        "visible": true,
+        "disabled": false
+    },
+    {
+        "id": "e5735ec975615189",
+        "type": "ui-page",
+        "name": "Login",
+        "ui": "0ac1bc2a2c2b617b",
+        "path": "/page4",
+        "icon": "login",
+        "layout": "grid",
+        "theme": "0d92c765bfad87e6",
+        "order": 1,
+        "className": "",
+        "visible": "true",
+        "disabled": "false"
+    },
+    {
+        "id": "f96aa3385eddc27a",
+        "type": "ui-page",
+        "name": "Graphs",
+        "ui": "0ac1bc2a2c2b617b",
+        "path": "/test",
+        "icon": "graph",
+        "layout": "grid",
+        "theme": "0d92c765bfad87e6",
+        "order": 4,
+        "className": "",
+        "visible": "true",
+        "disabled": "false"
+    },
+    {
+        "id": "719dcda32949998f",
+        "type": "ui-page",
+        "name": "Logout",
+        "ui": "0ac1bc2a2c2b617b",
+        "path": "/page5",
+        "icon": "logout",
+        "layout": "notebook",
+        "theme": "0d92c765bfad87e6",
+        "order": 5,
+        "className": "",
+        "visible": "true",
+        "disabled": "false"
+    },
+    {
+        "id": "9bb8d282867f8d78",
+        "type": "ui-page",
+        "name": "BarGraphs",
+        "ui": "0ac1bc2a2c2b617b",
+        "path": "/page6",
+        "icon": "graph",
+        "layout": "grid",
+        "theme": "0d92c765bfad87e6",
+        "order": 3,
+        "className": "",
+        "visible": "true",
+        "disabled": "false"
+    },
+    {
+        "id": "0d92c765bfad87e6",
+        "type": "ui-theme",
+        "name": "Basic Blue Theme",
+        "colors": {
+            "surface": "#4d58ff",
+            "primary": "#0094ce",
+            "bgPage": "#fbf9f9",
+            "groupBg": "#ffffff",
+            "groupOutline": "#cccccc"
+        },
+        "sizes": {
+            "pagePadding": "12px",
+            "groupGap": "12px",
+            "groupBorderRadius": "4px",
+            "widgetGap": "12px"
+        }
+    }
+]

@@ -1,0 +1,1670 @@
+[
+    {
+        "id": "e70e8743f76fb410",
+        "type": "subflow",
+        "name": "Communication-Node",
+        "info": "",
+        "category": "",
+        "in": [
+            {
+                "x": 80,
+                "y": 260,
+                "wires": [
+                    {
+                        "id": "2ba3985bca144890"
+                    },
+                    {
+                        "id": "fba9e574abeaba05"
+                    }
+                ]
+            }
+        ],
+        "out": [
+            {
+                "x": 1020,
+                "y": 80,
+                "wires": [
+                    {
+                        "id": "d9cdc3fcb7e4636b",
+                        "port": 0
+                    }
+                ]
+            },
+            {
+                "x": 730,
+                "y": 180,
+                "wires": [
+                    {
+                        "id": "f2c6474fb818687e",
+                        "port": 0
+                    }
+                ]
+            },
+            {
+                "x": 1090,
+                "y": 280,
+                "wires": [
+                    {
+                        "id": "0106d5463f41a8bd",
+                        "port": 0
+                    }
+                ]
+            },
+            {
+                "x": 770,
+                "y": 420,
+                "wires": [
+                    {
+                        "id": "70e32346b2d367fb",
+                        "port": 0
+                    }
+                ]
+            },
+            {
+                "x": 950,
+                "y": 480,
+                "wires": [
+                    {
+                        "id": "c7e2e8a1aaa2ca26",
+                        "port": 0
+                    }
+                ]
+            },
+            {
+                "x": 710,
+                "y": 340,
+                "wires": [
+                    {
+                        "id": "6bed093a55753d57",
+                        "port": 0
+                    }
+                ]
+            }
+        ],
+        "env": [
+            {
+                "name": "Domain-Name",
+                "type": "str",
+                "value": ""
+            },
+            {
+                "name": "Destination-Port",
+                "type": "num",
+                "value": ""
+            },
+            {
+                "name": "Local-Port",
+                "type": "num",
+                "value": ""
+            },
+            {
+                "name": "Module-ID",
+                "type": "str",
+                "value": ""
+            },
+            {
+                "name": "CSV-Location",
+                "type": "num",
+                "value": ""
+            },
+            {
+                "name": "M-Interval",
+                "type": "num",
+                "value": ""
+            },
+            {
+                "name": "N-Interval",
+                "type": "str",
+                "value": ""
+            },
+            {
+                "name": "I-Interval",
+                "type": "num",
+                "value": ""
+            },
+            {
+                "name": "Module_IP",
+                "type": "str",
+                "value": ""
+            },
+            {
+                "name": "MAC",
+                "type": "str",
+                "value": ""
+            },
+            {
+                "name": "Coverage",
+                "type": "str",
+                "value": ""
+            },
+            {
+                "name": "Type",
+                "type": "str",
+                "value": ""
+            },
+            {
+                "name": "Description",
+                "type": "str",
+                "value": ""
+            }
+        ],
+        "meta": {
+            "module": "node-red-contrib-iotserver",
+            "type": "Communication Node",
+            "author": "Masuod",
+            "desc": "Nodes Used for Communication with IoT Server"
+        },
+        "color": "#DDAA99",
+        "outputLabels": [
+            "N-Node Success (Delete Entry from CSV) ",
+            "Server Response",
+            "M-Node Failure (Write to CSV)",
+            "CSV Enteries for N-Node",
+            "N-Node Request",
+            "M-Node Request"
+        ]
+    },
+    {
+        "id": "17cf17aedb5e5cd9",
+        "type": "udp in",
+        "z": "e70e8743f76fb410",
+        "name": "",
+        "iface": "",
+        "port": "${Local-Port}",
+        "ipv": "udp4",
+        "multicast": "false",
+        "group": "",
+        "datatype": "utf8",
+        "x": 240,
+        "y": 200,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "7234e1f72144ce12",
+        "type": "udp out",
+        "z": "e70e8743f76fb410",
+        "name": "",
+        "addr": "${Domain-Name}",
+        "iface": "",
+        "port": "${Destination-Port}",
+        "ipv": "udp4",
+        "outport": "",
+        "base64": false,
+        "multicast": "false",
+        "x": 900,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "f2c6474fb818687e",
+        "type": "function",
+        "z": "e70e8743f76fb410",
+        "name": "function 27",
+        "func": "// Listen for response\nif (msg.payload && msg.payload.startsWith('M#')) {\n    // Clear timeout\n    var myIntervalId = flow.get('myIntervalId');\n    clearInterval(myIntervalId);\n    // Add a delay of 5 seconds (5000 milliseconds)\n    clearTimeout(context.get('timeout'));\n    // Set response received flag\n    context.set('responseReceived', true);\n    context.set('rerun', true)\n    node.warn(\"Response Received! Not writing to CSV.\");\n    // Reset responseReceived after a successful response\n    setTimeout(function () {\n        context.set('responseReceived', false);\n        context.set('executedInWindow', false);\n    }, 15000);\n    // Exit wait loop and start sending new input array\n    setTimeout(function () {\n        node.send({ topic: true });\n    }, 2000);\n}\n\nif (msg.payload && msg.payload.startsWith('N#')) {\n    node.send([null, msg]);\n}\n\nif (typeof msg.payload === 'string' && msg.payload.startsWith(\"I#\")) {\n    node.send([msg, null]);\n}\nreturn null;\n\nreturn msg;\n",
+        "outputs": 2,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 490,
+        "y": 200,
+        "wires": [
+            [],
+            [
+                "ecbe0a96de7d0999"
+            ]
+        ]
+    },
+    {
+        "id": "0106d5463f41a8bd",
+        "type": "file",
+        "z": "e70e8743f76fb410",
+        "name": "",
+        "filename": "C:\\Users\\big\\Desktop/data.csv",
+        "filenameType": "str",
+        "appendNewline": false,
+        "createDir": false,
+        "overwriteFile": "false",
+        "encoding": "none",
+        "x": 750,
+        "y": 280,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "6bed093a55753d57",
+        "type": "function",
+        "z": "e70e8743f76fb410",
+        "name": "function 28",
+        "func": "var rerun = false;\nvar inputArray = msg.DATA1.split(',').map(Number);\nvar DATA2 = msg.DATA2.split(',').map(Number);\nif (context.get('executedInWindow') === undefined) {\n    context.set('executedInWindow', false);\n}\nvar intervalId = null;\ncontext.get('rerun') || false;\n// Initialize lastValue and currentValue if they don't exist\nvar lastValue = context.get('lastValue') || [0,0,0,0,0,0,0,0,0,0];\nvar currentValue = context.get('currentValue') || [0,0,0,0,0,0,0,0,0,0];\ncontext.set('lastValue', currentValue);\ncontext.set('currentValue', inputArray);\n\n// Calculate the difference between last and current arrays\nvar differenceArray = inputArray.map((value, index) => {\n    var diff = value - lastValue[index];\n    return diff >= 0 ? diff : 0;\n});\nnode.warn(\"Difference Array\");\nnode.warn(differenceArray);\n\n// Check if current time is between 45 and 59 seconds\nfunction checkTimeWindow() {\n    \n    var currentTimestamp = Math.floor(Date.now() / 1000);\n    node.warn(currentTimestamp);\n    //var check = context.get(executedInWindowKey);\n    if (currentTimestamp % 60 >= 45 && currentTimestamp % 60 <= 59 && (context.get('executedInWindow') === false)) {\n        node.warn(\"Window Starts!\");\n        context.set('executedInWindow', true);\n        context.set('responseReceived', false);\n        // Get the current timestamp\n        var currentTimestamp = Date.now();\n        var timezoneOffset = new Date().getTimezoneOffset();\n        var timestampWithOffset = parseInt(currentTimestamp) - (parseInt(timezoneOffset) * 60 * 1000) + (parseInt(global.get('timedifference')) * 1000);\n        // var formattedTimestamp = new Date(timestampWithOffset).toISOString().replace(/[-:]/g, '').slice(0, -5);\n        // Convert timestampWithOffset to a Date object\n        var dateWithOffset = new Date(timestampWithOffset);\n\n        // Extract date, hours, minutes, and seconds\n        var year = dateWithOffset.getFullYear();\n        var month = ('0' + (dateWithOffset.getMonth() + 1)).slice(-2); // Adding 1 to month because months are zero-indexed\n        var day = ('0' + dateWithOffset.getDate()).slice(-2);\n        var hours = ('0' + dateWithOffset.getHours()).slice(-2);\n        var minutes = ('0' + dateWithOffset.getMinutes()).slice(-2);\n        var seconds = ('0' + dateWithOffset.getSeconds()).slice(-2);\n\n        // Format the components into the desired format \"YYYY-MM-DD HH:MM:SS\"\n        var formattedTimestamp = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;\n\n        // Construct the message payload\n        var msgPayload = `M#${msg.id}#${currentTimestamp}#${formattedTimestamp}#${differenceArray.join(',')}#${DATA2.join(',')}`;\n        node.warn(msgPayload);\n        msg.payload = msgPayload;\n        node.send([msg, null]);\n\n        // Start the 15-second timer\n        intervalId = setTimeout(function () {\n            if ((context.get('responseReceived') !== true) && (context.get('rerun') === false)) {\n                // Set msg.failed to true\n                msg.failed = true;\n                // Write output to CSV file\n                node.warn(\"Response Failed! Writing to CSV.\");\n                var csvData = `${formattedTimestamp},${inputArray.join(',')}\\n`;\n                node.send([null, { payload: csvData, topic: 'writeToFile' }]);\n                context.set('executedInWindow', false);\n                // Clear interval after CSV is saved or if responseReceived becomes true\n                clearInterval(intervalId);\n                intervalId = null;\n            }\n        }, 50000); // 60 seconds timeout\n}\nelse{\n     context.set('rerun', false)\n}\n}\n// Check the time window every second\nintervalId = setInterval(checkTimeWindow, 1000);\n\n// Return null to end the node\nreturn null;\n",
+        "outputs": 2,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 490,
+        "y": 260,
+        "wires": [
+            [
+                "7234e1f72144ce12"
+            ],
+            [
+                "0106d5463f41a8bd"
+            ]
+        ]
+    },
+    {
+        "id": "1eaa877e7c1820ae",
+        "type": "inject",
+        "z": "e70e8743f76fb410",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "id",
+                "v": "M1",
+                "vt": "str"
+            }
+        ],
+        "repeat": "${N-Interval}",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 270,
+        "y": 480,
+        "wires": [
+            [
+                "70e32346b2d367fb"
+            ]
+        ]
+    },
+    {
+        "id": "70e32346b2d367fb",
+        "type": "file in",
+        "z": "e70e8743f76fb410",
+        "name": "",
+        "filename": "${CSV-Location}",
+        "filenameType": "str",
+        "format": "utf8",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "utf8",
+        "allProps": true,
+        "x": 380,
+        "y": 420,
+        "wires": [
+            [
+                "798b416b7f889ef0"
+            ]
+        ]
+    },
+    {
+        "id": "d9cdc3fcb7e4636b",
+        "type": "file",
+        "z": "e70e8743f76fb410",
+        "name": "",
+        "filename": "${CSV-Location}",
+        "filenameType": "str",
+        "appendNewline": false,
+        "createDir": false,
+        "overwriteFile": "true",
+        "encoding": "none",
+        "x": 720,
+        "y": 80,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "c7e2e8a1aaa2ca26",
+        "type": "function",
+        "z": "e70e8743f76fb410",
+        "name": "function 29",
+        "func": "// Example CSV string received as input\nconst csvString = msg.payload;\n\n// Check if the CSV string is not empty\nif (csvString && csvString.trim() !== '') {\n    // Split the CSV string into lines\n    const lines = csvString.split('\\n');\n\n    // Extract the first line\n    const firstLine = lines.length > 0 ? lines[0] : '';\n\n    // Create the message payload\n    const currentTimestamp = Date.now();\n    const msgPayload = `N#${msg.id}#${currentTimestamp}#${firstLine}`;\n\n    // Send the message with the extracted first line\n    node.send({ payload: msgPayload });\n} else {\n    // If the CSV string is empty, send a message indicating that\n    node.warn('CSV string is empty');\n    node.send([null, { payload: 'CSV string is empty', topic: 'emptyCSV' }]);\n}\n\nreturn null;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 650,
+        "y": 520,
+        "wires": [
+            [
+                "be0646073599c2b7"
+            ]
+        ]
+    },
+    {
+        "id": "ecbe0a96de7d0999",
+        "type": "file in",
+        "z": "e70e8743f76fb410",
+        "name": "",
+        "filename": "${CSV-Location}",
+        "filenameType": "str",
+        "format": "utf8",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "utf8",
+        "allProps": false,
+        "x": 340,
+        "y": 80,
+        "wires": [
+            [
+                "2bc87609c0a55a08"
+            ]
+        ]
+    },
+    {
+        "id": "798b416b7f889ef0",
+        "type": "change",
+        "z": "e70e8743f76fb410",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "id",
+                "pt": "msg",
+                "to": "M1",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 540,
+        "y": 480,
+        "wires": [
+            [
+                "c7e2e8a1aaa2ca26"
+            ]
+        ]
+    },
+    {
+        "id": "be0646073599c2b7",
+        "type": "udp out",
+        "z": "e70e8743f76fb410",
+        "name": "",
+        "addr": "${Domain-Name}",
+        "iface": "",
+        "port": "${Destination-Port}",
+        "ipv": "udp4",
+        "outport": "",
+        "base64": false,
+        "multicast": "false",
+        "x": 920,
+        "y": 540,
+        "wires": []
+    },
+    {
+        "id": "2bc87609c0a55a08",
+        "type": "function",
+        "z": "e70e8743f76fb410",
+        "name": "function 31",
+        "func": "// Example CSV string received as input\nconst csvString = msg.payload;\n// Split the CSV string into lines\nconst lines = csvString.split('\\n');\n// Exclude the first line\nconst remainingLines = lines.slice(1).filter(line => line.trim() !== '').join('\\n');\nnode.send({payload: remainingLines, topic: 'writeToFile' });\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 550,
+        "y": 80,
+        "wires": [
+            [
+                "d9cdc3fcb7e4636b"
+            ]
+        ]
+    },
+    {
+        "id": "f8278008b4e4edd8",
+        "type": "change",
+        "z": "e70e8743f76fb410",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "DATA1",
+                "pt": "msg",
+                "to": "DATA1",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "DATA2",
+                "pt": "msg",
+                "to": "DATA2",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "id",
+                "pt": "msg",
+                "to": "Module-ID",
+                "tot": "env"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 300,
+        "y": 320,
+        "wires": [
+            [
+                "6bed093a55753d57"
+            ]
+        ]
+    },
+    {
+        "id": "815682b53f49ac8f",
+        "type": "function",
+        "z": "e70e8743f76fb410",
+        "name": "function 32",
+        "func": "// Extracting data from the input payload\nvar data = msg.payload;\nvar timestamp = Date.now();\n\n// Constructing the output payload\nvar outputPayload = `I#${msg.id}#${timestamp}#${data}#`;\n\n// Creating the new message object with the updated payload\nmsg.payload = outputPayload;\n\n// Return the modified message object\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 630,
+        "y": 740,
+        "wires": [
+            [
+                "82fa0816103b5aa7",
+                "1ef9b8b1f6f26805"
+            ]
+        ]
+    },
+    {
+        "id": "82fa0816103b5aa7",
+        "type": "udp out",
+        "z": "e70e8743f76fb410",
+        "name": "",
+        "addr": "${Domain-Name}",
+        "iface": "",
+        "port": "${Destination-Port}",
+        "ipv": "udp4",
+        "outport": "",
+        "base64": false,
+        "multicast": "false",
+        "x": 900,
+        "y": 660,
+        "wires": []
+    },
+    {
+        "id": "617e988e72792064",
+        "type": "inject",
+        "z": "e70e8743f76fb410",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "${I-Interval}",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "Module_IP",
+        "payloadType": "env",
+        "x": 200,
+        "y": 660,
+        "wires": [
+            [
+                "fe6a74c038204181"
+            ]
+        ]
+    },
+    {
+        "id": "98fb8d2501e14e87",
+        "type": "inject",
+        "z": "e70e8743f76fb410",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "${I-Interval}",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "MAC",
+        "payloadType": "env",
+        "x": 200,
+        "y": 700,
+        "wires": [
+            [
+                "fe6a74c038204181"
+            ]
+        ]
+    },
+    {
+        "id": "ea173f0285bc4199",
+        "type": "inject",
+        "z": "e70e8743f76fb410",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "${I-Interval}",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "Coverage",
+        "payloadType": "env",
+        "x": 200,
+        "y": 740,
+        "wires": [
+            [
+                "fe6a74c038204181"
+            ]
+        ]
+    },
+    {
+        "id": "6750c52a6934c651",
+        "type": "inject",
+        "z": "e70e8743f76fb410",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "${I-Interval}",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "Type",
+        "payloadType": "env",
+        "x": 200,
+        "y": 780,
+        "wires": [
+            [
+                "fe6a74c038204181"
+            ]
+        ]
+    },
+    {
+        "id": "a2de0a86331bdfb2",
+        "type": "inject",
+        "z": "e70e8743f76fb410",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "${I-Interval}",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "Description",
+        "payloadType": "env",
+        "x": 200,
+        "y": 820,
+        "wires": [
+            [
+                "fe6a74c038204181"
+            ]
+        ]
+    },
+    {
+        "id": "fe6a74c038204181",
+        "type": "join",
+        "z": "e70e8743f76fb410",
+        "name": "",
+        "mode": "custom",
+        "build": "string",
+        "property": "payload",
+        "propertyType": "msg",
+        "key": "topic",
+        "joiner": "#",
+        "joinerType": "str",
+        "accumulate": false,
+        "timeout": "",
+        "count": "5",
+        "reduceRight": false,
+        "reduceExp": "",
+        "reduceInit": "",
+        "reduceInitType": "",
+        "reduceFixup": "",
+        "x": 410,
+        "y": 740,
+        "wires": [
+            [
+                "4fcda0a7ee9ce63a"
+            ]
+        ]
+    },
+    {
+        "id": "1ef9b8b1f6f26805",
+        "type": "debug",
+        "z": "e70e8743f76fb410",
+        "name": "debug 27",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 780,
+        "y": 780,
+        "wires": []
+    },
+    {
+        "id": "4fcda0a7ee9ce63a",
+        "type": "change",
+        "z": "e70e8743f76fb410",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "payload",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "id",
+                "pt": "msg",
+                "to": "Module-ID",
+                "tot": "env"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 560,
+        "y": 660,
+        "wires": [
+            [
+                "815682b53f49ac8f"
+            ]
+        ]
+    },
+    {
+        "id": "2ba3985bca144890",
+        "type": "trigger",
+        "z": "e70e8743f76fb410",
+        "name": "",
+        "op1": "",
+        "op2": "0",
+        "op1type": "pay",
+        "op2type": "str",
+        "duration": "${M-Interval}",
+        "extend": false,
+        "overrideDelay": false,
+        "units": "s",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "topic",
+        "outputs": 1,
+        "x": 120,
+        "y": 360,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "fba9e574abeaba05",
+        "type": "function",
+        "z": "e70e8743f76fb410",
+        "name": "function 33",
+        "func": "// Get the current timestamp in seconds\nvar timestamp = Math.floor(Date.now() / 1000) % 60;\n\n// Check if the current timestamp is between 40 and 45 seconds\nif (timestamp >= 40 && timestamp < 45) {\n    // Forward the message immediately\n    node.send(msg);\n} else {\n    // Calculate the delay until the next window (40-45 seconds) of the next minute\n    var delaySeconds = 40 - timestamp;\n    var delayMilliseconds = delaySeconds * 1000;\n    node.warn(\"Wait Time\");\n    node.warn(delayMilliseconds);\n    // Delay the message until the next window\n    setTimeout(function() {\n        node.send(msg);\n    }, delayMilliseconds);\n}\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 250,
+        "y": 260,
+        "wires": [
+            [
+                "f8278008b4e4edd8"
+            ]
+        ]
+    },
+    {
+        "id": "8649e07d46b013b5",
+        "type": "subflow",
+        "name": "Clock Node",
+        "info": "",
+        "category": "transfers",
+        "in": [],
+        "out": [
+            {
+                "x": 1010,
+                "y": 280,
+                "wires": [
+                    {
+                        "id": "bee49f918d163164",
+                        "port": 0
+                    }
+                ]
+            },
+            {
+                "x": 1010,
+                "y": 200,
+                "wires": [
+                    {
+                        "id": "6b9e56783ef5e12e",
+                        "port": 0
+                    }
+                ]
+            }
+        ],
+        "env": [
+            {
+                "name": "Module_ID",
+                "type": "str",
+                "value": ""
+            },
+            {
+                "name": "Domain-Name",
+                "type": "str",
+                "value": ""
+            },
+            {
+                "name": "Destination-Port",
+                "type": "num",
+                "value": ""
+            },
+            {
+                "name": "Local-Port",
+                "type": "num",
+                "value": ""
+            },
+            {
+                "name": "Interval-D",
+                "type": "num",
+                "value": ""
+            },
+            {
+                "name": "Interval-V",
+                "type": "num",
+                "value": ""
+            }
+        ],
+        "meta": {
+            "module": "node-red-contrib-iotserver",
+            "type": "Clock-Node",
+            "author": "Masuod",
+            "desc": "Nodes Used for Communication with IoT Server"
+        },
+        "color": "#DDAA99",
+        "outputLabels": [
+            "Server-Time-Difference",
+            "Server-Time-Stamp"
+        ]
+    },
+    {
+        "id": "f5f9c9ada9793686",
+        "type": "function",
+        "z": "8649e07d46b013b5",
+        "name": "function 21",
+        "func": "// Get the current date and time\nvar currentDate = new Date();\nvar timestamp = Date.now();\nvar id = msg.id;\n\n// Get the timezone offset in minutes (positive if ahead of UTC, negative if behind UTC)\nvar timezoneOffset = currentDate.getTimezoneOffset();\n\n// Convert the timezone offset to milliseconds\nvar timezoneOffsetMilliseconds = -(timezoneOffset * 60 * 1000);\n// Add the timezone offset to the current date and time\nvar currentDateWithOffset = new Date(currentDate.getTime() + timezoneOffsetMilliseconds);\n\n// Format the date as \"YYYY-MM-DD HH:mm:ss\"\nvar formattedDate = currentDateWithOffset.toISOString().replace('T', ' ').substr(0, 19);\n\n// Constructing the output payload with the formatted date\nvar outputPayload = `V#${id}#${timestamp}#${formattedDate}#`;\n\n// Creating the new message object with the updated payload\nmsg.payload = outputPayload;\n\n// Return the modified message object\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 410,
+        "y": 140,
+        "wires": [
+            [
+                "faaeaacf7569648d"
+            ]
+        ]
+    },
+    {
+        "id": "faaeaacf7569648d",
+        "type": "udp out",
+        "z": "8649e07d46b013b5",
+        "name": "",
+        "addr": "${Domain-Name}",
+        "iface": "",
+        "port": "${Destination-Port}",
+        "ipv": "udp4",
+        "outport": "",
+        "base64": false,
+        "multicast": "false",
+        "x": 680,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "37d5302e4995b74b",
+        "type": "inject",
+        "z": "8649e07d46b013b5",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "id",
+                "v": "Module_ID",
+                "vt": "env"
+            }
+        ],
+        "repeat": "${Interval-V}",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 230,
+        "y": 140,
+        "wires": [
+            [
+                "f5f9c9ada9793686"
+            ]
+        ]
+    },
+    {
+        "id": "c8fb946b581883d7",
+        "type": "udp in",
+        "z": "8649e07d46b013b5",
+        "name": "",
+        "iface": "",
+        "port": "${Local-Port}",
+        "ipv": "udp4",
+        "multicast": "false",
+        "group": "",
+        "datatype": "utf8",
+        "x": 600,
+        "y": 180,
+        "wires": [
+            [
+                "bee49f918d163164"
+            ]
+        ]
+    },
+    {
+        "id": "bee49f918d163164",
+        "type": "function",
+        "z": "8649e07d46b013b5",
+        "name": "function 22",
+        "func": "// Check if msg.payload starts with \"D#\"\nif (typeof msg.payload === 'string' && msg.payload.startsWith(\"V#\")) {\n    // Split the payload by '#' to extract the timestamp\n    const payloadParts = msg.payload.split('#');\n    if (payloadParts.length >= 3) {\n        // Extract the timestamp\n        const serverTimestamp = payloadParts[2];\n        global.set(\"timedifference\", serverTimestamp);\n        // Output the timestamp to the node\n        msg.payload = (\"Server Time Difference in Seconds: \" + serverTimestamp);\n        // Pass the message to the next node\n        return msg;\n    } else {\n        // Debug message if payload format is invalid\n        node.warn(\"Invalid payload format\");\n    }\n}\n\n// If the payload doesn't start with \"D#\" or is invalid, drop the message\nreturn null;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 770,
+        "y": 180,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "87fe34eed5cfd09d",
+        "type": "udp out",
+        "z": "8649e07d46b013b5",
+        "name": "",
+        "addr": "${Domain-Name}",
+        "iface": "",
+        "port": "${Destination-Port}",
+        "ipv": "udp4",
+        "outport": "",
+        "base64": false,
+        "multicast": "false",
+        "x": 680,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "af786844befe03cb",
+        "type": "inject",
+        "z": "8649e07d46b013b5",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "id",
+                "v": "Module_ID",
+                "vt": "env"
+            }
+        ],
+        "repeat": "${Interval-D}",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 230,
+        "y": 260,
+        "wires": [
+            [
+                "a037762ae6f3b84b"
+            ]
+        ]
+    },
+    {
+        "id": "a037762ae6f3b84b",
+        "type": "function",
+        "z": "8649e07d46b013b5",
+        "name": "function 23",
+        "func": "var timestamp = Date.now();\nvar id = msg.id;\n// Constructing the output payload\nvar outputPayload = `D#${id}#${timestamp}#`;\n\n// Creating the new message object with the updated payload\nmsg.payload = outputPayload;\n\n// Return the modified message object\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 410,
+        "y": 260,
+        "wires": [
+            [
+                "87fe34eed5cfd09d"
+            ]
+        ]
+    },
+    {
+        "id": "2a54e6b1fd58223f",
+        "type": "udp in",
+        "z": "8649e07d46b013b5",
+        "name": "",
+        "iface": "",
+        "port": "${Local-Port}",
+        "ipv": "udp4",
+        "multicast": "false",
+        "group": "",
+        "datatype": "utf8",
+        "x": 600,
+        "y": 300,
+        "wires": [
+            [
+                "6b9e56783ef5e12e"
+            ]
+        ]
+    },
+    {
+        "id": "6b9e56783ef5e12e",
+        "type": "function",
+        "z": "8649e07d46b013b5",
+        "name": "function 24",
+        "func": "// Check if msg.payload starts with \"D#\"\nif (typeof msg.payload === 'string' && msg.payload.startsWith(\"D#\")) {\n    // Split the payload by '#' to extract the timestamp\n    const payloadParts = msg.payload.split('#');\n    if (payloadParts.length >= 3) {\n        // Extract the timestamp\n        const serverTimestamp = payloadParts[2];\n\n        // Output the timestamp to the node\n        msg.payload = (\"Server timestamp: \" + serverTimestamp);\n        \n        // Pass the message to the next node\n        return msg;\n    } else {\n        // Debug message if payload format is invalid\n        node.warn(\"Invalid payload format\");\n    }\n}\n\n// If the payload doesn't start with \"D#\" or is invalid, drop the message\nreturn null;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 770,
+        "y": 300,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "487099c6e08dfb4c",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "f1c8c137f6570fef",
+        "type": "subflow:8649e07d46b013b5",
+        "z": "487099c6e08dfb4c",
+        "d": true,
+        "name": "",
+        "env": [
+            {
+                "name": "Module_ID",
+                "value": "M1",
+                "type": "str"
+            },
+            {
+                "name": "Domain-Name",
+                "value": "51.77.235.99",
+                "type": "str"
+            },
+            {
+                "name": "Destination-Port",
+                "value": "46640",
+                "type": "num"
+            },
+            {
+                "name": "Local-Port",
+                "value": "46640",
+                "type": "num"
+            },
+            {
+                "name": "Interval-D",
+                "value": "10",
+                "type": "num"
+            },
+            {
+                "name": "Interval-V",
+                "value": "10",
+                "type": "num"
+            }
+        ],
+        "x": 650,
+        "y": 80,
+        "wires": [
+            [
+                "7104c3f4764aaf4e"
+            ],
+            [
+                "ab35826cc48a68cc"
+            ]
+        ]
+    },
+    {
+        "id": "7104c3f4764aaf4e",
+        "type": "debug",
+        "z": "487099c6e08dfb4c",
+        "d": true,
+        "name": "debug 19",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 840,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "ab35826cc48a68cc",
+        "type": "debug",
+        "z": "487099c6e08dfb4c",
+        "d": true,
+        "name": "debug 20",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 840,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "a68e106d5a4a51fb",
+        "type": "debug",
+        "z": "487099c6e08dfb4c",
+        "d": true,
+        "name": "debug 9",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 940,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "20ab5bb46d800d09",
+        "type": "function",
+        "z": "487099c6e08dfb4c",
+        "d": true,
+        "name": "function 9",
+        "func": "// Get the current UTC timestamp in seconds\nvar utcTimestampSeconds = Math.floor(Date.now() / 1000);\n\n// Get the current timezone offset in seconds\nvar timezoneOffsetSeconds = new Date().getTimezoneOffset() * 60;\nvar timezoneOffsetSeconds = -timezoneOffsetSeconds;\n// Get the global variable 'timedifference'\nvar timedifference = global.get('timedifference') || 0;\n\n// Print UTC timestamp, timezone offset, and timedifference to the debug window\nnode.warn('UTC Timestamp (seconds): ' + utcTimestampSeconds);\nnode.warn('Timezone Offset (seconds): ' + timezoneOffsetSeconds);\nnode.warn('Time Difference: ' + timedifference);\n\n// Calculate server timestamp based on timedifference\nvar serverTimestampSeconds = parseInt(utcTimestampSeconds) + parseInt(timezoneOffsetSeconds) + parseInt(timedifference);\n\n// Format server timestamp as YYYYMMDDhhmmss\nvar serverTimestampFormatted = formatTimestamp(serverTimestampSeconds);\n\n// Print server timestamp in YYYYMMDDhhmmss format to the debug window\nnode.warn('Server Timestamp (YYYYMMDDhhmmss): ' + serverTimestampFormatted);\n\n// Create the message object with the calculated values\nmsg.payload = {\n    utcTimestampSeconds: utcTimestampSeconds,\n    timezoneOffsetSeconds: timezoneOffsetSeconds,\n    timedifference: timedifference,\n    serverTimestamp: serverTimestampFormatted\n};\n\n// Send the message to the next node in the flow\nreturn msg;\n\n// Function to format timestamp as YYYYMMDDhhmmss\nfunction formatTimestamp(timestampSeconds) {\n    var date = new Date(timestampSeconds * 1000);\n    var year = date.getUTCFullYear();\n    var month = ('0' + (date.getUTCMonth() + 1)).slice(-2);\n    var day = ('0' + date.getUTCDate()).slice(-2);\n    var hours = ('0' + date.getUTCHours()).slice(-2);\n    var minutes = ('0' + date.getUTCMinutes()).slice(-2);\n    var seconds = ('0' + date.getUTCSeconds()).slice(-2);\n    return year + month + day + hours + minutes + seconds;\n}\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 780,
+        "y": 200,
+        "wires": [
+            [
+                "a68e106d5a4a51fb"
+            ]
+        ]
+    },
+    {
+        "id": "7e73ec74506df0dd",
+        "type": "complete",
+        "z": "487099c6e08dfb4c",
+        "d": true,
+        "name": "",
+        "scope": [
+            "ab35826cc48a68cc"
+        ],
+        "uncaught": false,
+        "x": 610,
+        "y": 200,
+        "wires": [
+            [
+                "20ab5bb46d800d09"
+            ]
+        ]
+    },
+    {
+        "id": "f0d30fe840dc5f59",
+        "type": "function",
+        "z": "487099c6e08dfb4c",
+        "d": true,
+        "name": "function 25",
+        "func": "// Extracting data from the input payload\nvar data = msg.payload;\n\n// Get the current date and time\nvar currentDate = new Date();\nvar timestamp = Date.now();\n\n// Get the timezone offset in minutes (positive if ahead of UTC, negative if behind UTC)\nvar timezoneOffset = currentDate.getTimezoneOffset();\n\n// Convert the timezone offset to milliseconds\nvar timezoneOffsetMilliseconds = -(timezoneOffset * 60 * 1000);\n\n// Add the timezone offset to the current date and time\nvar currentDateWithOffset = new Date(currentDate.getTime() + timezoneOffsetMilliseconds);\n\n// Format the date as \"YYYY-MM-DD HH:mm:ss\"\nvar formattedDate = currentDateWithOffset.toISOString().replace('T', ' ').substr(0, 19);\n\n// Get the time difference from the global variable 'timedifference'\nvar timeDifferenceSecondsStr = global.get('timedifference') || \"0\"; // If 'timedifference' is not set, default to \"0\"\n\n// Parse the time difference to integer\nvar timeDifferenceSeconds = parseInt(timeDifferenceSecondsStr);\n\n// Convert the time difference to hours, minutes, and seconds\nvar timeDiffHours = Math.floor(Math.abs(timeDifferenceSeconds) / 3600);\nvar timeDiffMinutes = Math.floor((Math.abs(timeDifferenceSeconds) % 3600) / 60);\nvar timeDiffSeconds = Math.abs(timeDifferenceSeconds) % 60;\n\n// Adjust the formattedDate based on the sign of timeDifference\nif (timeDifferenceSeconds < 0) {\n    // Subtract time difference from the current date and time\n    currentDateWithOffset.setHours(currentDateWithOffset.getHours() - timeDiffHours);\n    currentDateWithOffset.setMinutes(currentDateWithOffset.getMinutes() - timeDiffMinutes);\n    currentDateWithOffset.setSeconds(currentDateWithOffset.getSeconds() - timeDiffSeconds);\n} else {\n    // Add time difference to the current date and time\n    currentDateWithOffset.setHours(currentDateWithOffset.getHours() + timeDiffHours);\n    currentDateWithOffset.setMinutes(currentDateWithOffset.getMinutes() + timeDiffMinutes);\n    currentDateWithOffset.setSeconds(currentDateWithOffset.getSeconds() + timeDiffSeconds);\n}\n\n// Format the adjusted date as \"YYYY-MM-DD HH:mm:ss\"\nvar adjustedFormattedDate = currentDateWithOffset.toISOString().replace('T', ' ').substr(0, 19);\n\n// Constructing the output payload\nvar outputPayload = `M#M1#${timestamp}#${adjustedFormattedDate}#${data}#`;\n\n// Creating the new message object with the updated payload\nmsg.payload = outputPayload;\n\n// Return the modified message object\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 250,
+        "y": 180,
+        "wires": [
+            [
+                "162cc5b96061f115"
+            ]
+        ]
+    },
+    {
+        "id": "162cc5b96061f115",
+        "type": "udp out",
+        "z": "487099c6e08dfb4c",
+        "d": true,
+        "name": "",
+        "addr": "${Domain-Name}",
+        "iface": "",
+        "port": "${Destination-Port}",
+        "ipv": "udp4",
+        "outport": "",
+        "base64": false,
+        "multicast": "false",
+        "x": 530,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "a23ff09b04e2690e",
+        "type": "udp in",
+        "z": "487099c6e08dfb4c",
+        "d": true,
+        "name": "",
+        "iface": "",
+        "port": "${Local-Port}",
+        "ipv": "udp4",
+        "multicast": "false",
+        "group": "",
+        "datatype": "utf8",
+        "x": 160,
+        "y": 60,
+        "wires": [
+            [
+                "ee25717941c71d19"
+            ]
+        ]
+    },
+    {
+        "id": "ee25717941c71d19",
+        "type": "function",
+        "z": "487099c6e08dfb4c",
+        "d": true,
+        "name": "function 26",
+        "func": "// Check if msg.payload starts with \"D#\"\nif (typeof msg.payload === 'string' && msg.payload.startsWith(\"M#\")) {\n    return msg;\n}\n// If the payload doesn't start with \"D#\" or is invalid, drop the message\nreturn null;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 350,
+        "y": 60,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "4ad8d9dc4fb7a2b6",
+        "type": "join",
+        "z": "487099c6e08dfb4c",
+        "d": true,
+        "name": "",
+        "mode": "custom",
+        "build": "string",
+        "property": "payload",
+        "propertyType": "msg",
+        "key": "topic",
+        "joiner": "#",
+        "joinerType": "str",
+        "accumulate": false,
+        "timeout": "",
+        "count": "${Message-Number}",
+        "reduceRight": false,
+        "reduceExp": "",
+        "reduceInit": "",
+        "reduceInitType": "",
+        "reduceFixup": "",
+        "x": 90,
+        "y": 180,
+        "wires": [
+            [
+                "f0d30fe840dc5f59"
+            ]
+        ]
+    },
+    {
+        "id": "6a6cf4cb7e58f86f",
+        "type": "subflow:e70e8743f76fb410",
+        "z": "487099c6e08dfb4c",
+        "name": "",
+        "env": [
+            {
+                "name": "Domain-Name",
+                "value": "51.77.235.99",
+                "type": "str"
+            },
+            {
+                "name": "Destination-Port",
+                "value": "46640",
+                "type": "num"
+            },
+            {
+                "name": "Local-Port",
+                "value": "46640",
+                "type": "num"
+            },
+            {
+                "name": "Module-ID",
+                "value": "M1",
+                "type": "str"
+            },
+            {
+                "name": "CSV-Location",
+                "value": "C:\\Users\\big\\Desktop/data.csv",
+                "type": "str"
+            },
+            {
+                "name": "M-Interval",
+                "value": "30",
+                "type": "num"
+            },
+            {
+                "name": "N-Interval",
+                "value": "60",
+                "type": "str"
+            },
+            {
+                "name": "I-Interval",
+                "value": "36000",
+                "type": "num"
+            },
+            {
+                "name": "Module_IP",
+                "value": "1.2.3.4.5",
+                "type": "str"
+            },
+            {
+                "name": "MAC",
+                "value": "aa:11:bb:22",
+                "type": "str"
+            },
+            {
+                "name": "Coverage",
+                "value": "Envelop",
+                "type": "str"
+            },
+            {
+                "name": "Type",
+                "value": "TX11",
+                "type": "str"
+            },
+            {
+                "name": "Description",
+                "value": "IoT-Moldule",
+                "type": "str"
+            }
+        ],
+        "x": 360,
+        "y": 360,
+        "wires": [
+            [
+                "6d5c543772f07f48"
+            ],
+            [
+                "c86630fbf4fe7cdd"
+            ],
+            [
+                "b5585fdbeea16282"
+            ],
+            [
+                "be0cbd2fcb47a899"
+            ],
+            [
+                "08e1b8cc629e297e"
+            ],
+            [
+                "4aa9c940f8d6f69d"
+            ]
+        ]
+    },
+    {
+        "id": "00ca0011e77c7099",
+        "type": "inject",
+        "z": "487099c6e08dfb4c",
+        "name": "",
+        "props": [
+            {
+                "p": "DATA1",
+                "v": "1200,20,8,60,1,9,8,7",
+                "vt": "str"
+            },
+            {
+                "p": "topic",
+                "v": "true",
+                "vt": "bool"
+            },
+            {
+                "p": "response",
+                "v": "false",
+                "vt": "bool"
+            },
+            {
+                "p": "id",
+                "v": "M1",
+                "vt": "str"
+            },
+            {
+                "p": "DATA2",
+                "v": "0,1,2,4,5,7",
+                "vt": "str"
+            }
+        ],
+        "repeat": "30",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 150,
+        "y": 340,
+        "wires": [
+            [
+                "6a6cf4cb7e58f86f"
+            ]
+        ]
+    },
+    {
+        "id": "41853fed5efc7c4c",
+        "type": "inject",
+        "z": "487099c6e08dfb4c",
+        "name": "",
+        "props": [
+            {
+                "p": "DATA1",
+                "v": "1505,40,11,70,5,20,11,19",
+                "vt": "str"
+            },
+            {
+                "p": "topic",
+                "v": "true",
+                "vt": "bool"
+            },
+            {
+                "p": "response",
+                "v": "false",
+                "vt": "bool"
+            },
+            {
+                "p": "id",
+                "v": "M1",
+                "vt": "str"
+            },
+            {
+                "p": "DATA2",
+                "v": "20,30,40,60,100,120",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 150,
+        "y": 380,
+        "wires": [
+            [
+                "6a6cf4cb7e58f86f"
+            ]
+        ]
+    },
+    {
+        "id": "9f4b5900e3a5f5a1",
+        "type": "inject",
+        "z": "487099c6e08dfb4c",
+        "name": "",
+        "props": [
+            {
+                "p": "DATA1",
+                "v": "1650,80,40,200,100,19,25,55",
+                "vt": "str"
+            },
+            {
+                "p": "topic",
+                "v": "true",
+                "vt": "bool"
+            },
+            {
+                "p": "response",
+                "v": "false",
+                "vt": "bool"
+            },
+            {
+                "p": "id",
+                "v": "M1",
+                "vt": "str"
+            },
+            {
+                "p": "DATA2",
+                "v": "50,60,90,10,90,150",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 150,
+        "y": 420,
+        "wires": [
+            [
+                "6a6cf4cb7e58f86f"
+            ]
+        ]
+    },
+    {
+        "id": "88b43b8cdb43fa15",
+        "type": "inject",
+        "z": "487099c6e08dfb4c",
+        "name": "",
+        "props": [
+            {
+                "p": "DATA1",
+                "v": "1000,10,20,50,10,9,8,7",
+                "vt": "str"
+            },
+            {
+                "p": "DATA2",
+                "v": "11,22,44,55,66,77",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 150,
+        "y": 300,
+        "wires": [
+            [
+                "6a6cf4cb7e58f86f"
+            ]
+        ]
+    },
+    {
+        "id": "6d5c543772f07f48",
+        "type": "debug",
+        "z": "487099c6e08dfb4c",
+        "name": "debug 21",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 600,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "c86630fbf4fe7cdd",
+        "type": "debug",
+        "z": "487099c6e08dfb4c",
+        "name": "debug 22",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 600,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "be0cbd2fcb47a899",
+        "type": "debug",
+        "z": "487099c6e08dfb4c",
+        "name": "debug 23",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 600,
+        "y": 400,
+        "wires": []
+    },
+    {
+        "id": "b5585fdbeea16282",
+        "type": "debug",
+        "z": "487099c6e08dfb4c",
+        "name": "debug 24",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 600,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "4aa9c940f8d6f69d",
+        "type": "debug",
+        "z": "487099c6e08dfb4c",
+        "name": "debug 25",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 600,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "08e1b8cc629e297e",
+        "type": "debug",
+        "z": "487099c6e08dfb4c",
+        "name": "debug 26",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 600,
+        "y": 440,
+        "wires": []
+    }
+]

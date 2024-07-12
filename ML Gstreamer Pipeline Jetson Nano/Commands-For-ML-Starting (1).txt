@@ -1,0 +1,10 @@
+Command 1 in New Command Window
+cd /home/virtupharma/Desktop/newsubmiton\ \(3\)/newsubmiton && python3.8 realtimetraining_server_websocket.py
+
+Command 2 in New Command Window
+gst-launch-1.0 -v v4l2src device=/dev/video0 ! videoconvert ! video/x-raw,format=I420,width=640,height=480,framerate=25/1 ! tee name=t \
+    t. ! queue ! x264enc bframes=0 key-int-max=45 bitrate=500 tune=zerolatency ! video/x-h264,stream-format=avc,alignment=au ! kvssink stream-name=pycam storage-size=128 access-key=$AWS_ACCESS_ID secret-key=$AWS_SECRET_KEY aws-region=$AWS_DEFAULT_REGION \
+    t. ! queue !  videoconvert !     x264enc tune=zerolatency !     rtph264pay !     udpsink host=localhost port=5000
+
+Command 3 in New Command Window
+python3.8 /home/virtupharma/Desktop/ML-Masuod/video_processing.py

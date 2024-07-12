@@ -1,0 +1,812 @@
+[
+    {
+        "id": "3a2cde8adb50f9b7",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "bec624c321efebeb",
+        "type": "inject",
+        "z": "3a2cde8adb50f9b7",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "1",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 130,
+        "y": 120,
+        "wires": [
+            [
+                "a6f580a47b1c5d1c"
+            ]
+        ]
+    },
+    {
+        "id": "c7143dae5d8f85b0",
+        "type": "ui_gauge",
+        "z": "3a2cde8adb50f9b7",
+        "name": "",
+        "group": "da96b184ac761774",
+        "order": 3,
+        "width": 8,
+        "height": 7,
+        "gtype": "gage",
+        "title": "Temperature (DHT11)",
+        "label": "C",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "50",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "diff": false,
+        "className": "",
+        "x": 400,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "811b4d26d11aade7",
+        "type": "change",
+        "z": "3a2cde8adb50f9b7",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "humidity",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 380,
+        "y": 200,
+        "wires": [
+            [
+                "43f8e65fd9532231"
+            ]
+        ]
+    },
+    {
+        "id": "43f8e65fd9532231",
+        "type": "ui_gauge",
+        "z": "3a2cde8adb50f9b7",
+        "name": "",
+        "group": "da96b184ac761774",
+        "order": 4,
+        "width": 7,
+        "height": 7,
+        "gtype": "wave",
+        "title": "Humidity (DHT11)",
+        "label": "%",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "100",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "diff": false,
+        "className": "",
+        "x": 630,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "708bb3d2da8e3a88",
+        "type": "comment",
+        "z": "3a2cde8adb50f9b7",
+        "name": "2.2. Show readings using Gauges",
+        "info": "",
+        "x": 450,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "ea6939ba01c3dc95",
+        "type": "function",
+        "z": "3a2cde8adb50f9b7",
+        "name": "function 1",
+        "func": "var msg1 = {};\nvar msg2 = {};\nmsg1.payload = msg.payload;\nmsg1.topic = \"Temperature\";\nmsg2.payload = msg.humidity;\nmsg2.topic = \"Humidity\";\nreturn [msg1, msg2];\n",
+        "outputs": 2,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 360,
+        "y": 240,
+        "wires": [
+            [
+                "56981413a098c586"
+            ],
+            [
+                "56981413a098c586"
+            ]
+        ]
+    },
+    {
+        "id": "56981413a098c586",
+        "type": "ui_chart",
+        "z": "3a2cde8adb50f9b7",
+        "name": "",
+        "group": "da96b184ac761774",
+        "order": 7,
+        "width": 7,
+        "height": 7,
+        "label": "Temperature and Humidity",
+        "chartType": "line",
+        "legend": "true",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "0",
+        "ymax": "100",
+        "removeOlder": 1,
+        "removeOlderPoints": "",
+        "removeOlderUnit": "60",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 620,
+        "y": 240,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "ce3bc0a6bfac58eb",
+        "type": "function",
+        "z": "3a2cde8adb50f9b7",
+        "name": "function 2",
+        "func": "var msg1 = {};\nvar msg2 = {};\nmsg1.payload = Math.random();\nmsg1.topic = \"Uptime\";\nmsg2.payload = 1.0- msg1.payload;\nmsg2.topic = \"Downtime\";\nreturn [msg1,msg2];\n",
+        "outputs": 2,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 360,
+        "y": 340,
+        "wires": [
+            [
+                "9f882bae6a6d794a"
+            ],
+            [
+                "9f882bae6a6d794a"
+            ]
+        ]
+    },
+    {
+        "id": "9f882bae6a6d794a",
+        "type": "ui_chart",
+        "z": "3a2cde8adb50f9b7",
+        "name": "",
+        "group": "da96b184ac761774",
+        "order": 6,
+        "width": 8,
+        "height": 7,
+        "label": "Utilisation",
+        "chartType": "pie",
+        "legend": "true",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "0",
+        "ymax": "100",
+        "removeOlder": 1,
+        "removeOlderPoints": "",
+        "removeOlderUnit": "60",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 600,
+        "y": 340,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "781b14eabfbf7523",
+        "type": "inject",
+        "z": "3a2cde8adb50f9b7",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "1",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 130,
+        "y": 340,
+        "wires": [
+            [
+                "ce3bc0a6bfac58eb"
+            ]
+        ]
+    },
+    {
+        "id": "f9a85fc3ce0bed6e",
+        "type": "ui_button",
+        "z": "3a2cde8adb50f9b7",
+        "name": "",
+        "group": "da96b184ac761774",
+        "order": 10,
+        "width": 7,
+        "height": 1,
+        "passthru": false,
+        "label": "Low",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "0",
+        "payloadType": "num",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 230,
+        "y": 400,
+        "wires": [
+            [
+                "33bd61fb295e071f"
+            ]
+        ]
+    },
+    {
+        "id": "39e57c8486d24fe7",
+        "type": "ui_button",
+        "z": "3a2cde8adb50f9b7",
+        "name": "",
+        "group": "da96b184ac761774",
+        "order": 9,
+        "width": 7,
+        "height": 1,
+        "passthru": false,
+        "label": "High",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "10",
+        "payloadType": "num",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 230,
+        "y": 440,
+        "wires": [
+            [
+                "33bd61fb295e071f"
+            ]
+        ]
+    },
+    {
+        "id": "79a9660617a361be",
+        "type": "ui_gauge",
+        "z": "3a2cde8adb50f9b7",
+        "name": "",
+        "group": "da96b184ac761774",
+        "order": 5,
+        "width": 7,
+        "height": 7,
+        "gtype": "donut",
+        "title": "Level meter",
+        "label": "units",
+        "format": "{{value}}",
+        "min": 0,
+        "max": 10,
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "diff": false,
+        "className": "",
+        "x": 630,
+        "y": 420,
+        "wires": []
+    },
+    {
+        "id": "33bd61fb295e071f",
+        "type": "ui_slider",
+        "z": "3a2cde8adb50f9b7",
+        "name": "",
+        "label": "Fine adjustment",
+        "tooltip": "",
+        "group": "da96b184ac761774",
+        "order": 11,
+        "width": 7,
+        "height": 1,
+        "passthru": true,
+        "outs": "all",
+        "topic": "topic",
+        "topicType": "msg",
+        "min": 0,
+        "max": 10,
+        "step": 1,
+        "className": "",
+        "x": 440,
+        "y": 420,
+        "wires": [
+            [
+                "79a9660617a361be"
+            ]
+        ]
+    },
+    {
+        "id": "a6f580a47b1c5d1c",
+        "type": "dht-emu",
+        "z": "3a2cde8adb50f9b7",
+        "name": "",
+        "topic": "dht-emu",
+        "dht": "11",
+        "pintype": 1,
+        "pin": 4,
+        "x": 140,
+        "y": 220,
+        "wires": [
+            [
+                "c7143dae5d8f85b0",
+                "811b4d26d11aade7",
+                "ea6939ba01c3dc95"
+            ]
+        ]
+    },
+    {
+        "id": "900f9d0d99c28a7b",
+        "type": "mqtt out",
+        "z": "3a2cde8adb50f9b7",
+        "name": "",
+        "topic": "dht11/temperature",
+        "qos": "1",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "558d974b449cf58c",
+        "x": 690,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "7f9dcee8b3c0b25e",
+        "type": "mqtt in",
+        "z": "3a2cde8adb50f9b7",
+        "name": "",
+        "topic": "dht11/temperature",
+        "qos": "1",
+        "datatype": "auto-detect",
+        "broker": "558d974b449cf58c",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 590,
+        "y": 680,
+        "wires": [
+            [
+                "6ad5b21e2dd03a0b"
+            ]
+        ]
+    },
+    {
+        "id": "fa23d2030b0a7e86",
+        "type": "ui_button",
+        "z": "3a2cde8adb50f9b7",
+        "name": "",
+        "group": "da96b184ac761774",
+        "order": 16,
+        "width": 10,
+        "height": 1,
+        "passthru": false,
+        "label": "Trigger MQTT",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "10",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 140,
+        "y": 560,
+        "wires": [
+            [
+                "29a54377ddb8acf2"
+            ]
+        ]
+    },
+    {
+        "id": "6572bb3940635a7f",
+        "type": "mqtt out",
+        "z": "3a2cde8adb50f9b7",
+        "name": "",
+        "topic": "dht11/humidity",
+        "qos": "1",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "558d974b449cf58c",
+        "x": 700,
+        "y": 560,
+        "wires": []
+    },
+    {
+        "id": "29a54377ddb8acf2",
+        "type": "dht-emu",
+        "z": "3a2cde8adb50f9b7",
+        "name": "",
+        "topic": "dht-emu",
+        "dht": "11",
+        "pintype": "0",
+        "pin": 4,
+        "x": 320,
+        "y": 560,
+        "wires": [
+            [
+                "ed6eec3c7b783d40",
+                "d09f4639522f0dd1"
+            ]
+        ]
+    },
+    {
+        "id": "ed6eec3c7b783d40",
+        "type": "change",
+        "z": "3a2cde8adb50f9b7",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "humidity",
+                "pt": "msg",
+                "to": "payload",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "dht11/humidity",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 500,
+        "y": 580,
+        "wires": [
+            [
+                "6572bb3940635a7f"
+            ]
+        ]
+    },
+    {
+        "id": "d09f4639522f0dd1",
+        "type": "change",
+        "z": "3a2cde8adb50f9b7",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "dht11/temperature",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 490,
+        "y": 540,
+        "wires": [
+            [
+                "900f9d0d99c28a7b"
+            ]
+        ]
+    },
+    {
+        "id": "6ad5b21e2dd03a0b",
+        "type": "ui_gauge",
+        "z": "3a2cde8adb50f9b7",
+        "name": "",
+        "group": "da96b184ac761774",
+        "order": 18,
+        "width": 10,
+        "height": 7,
+        "gtype": "gage",
+        "title": "MQTT temperature",
+        "label": "C",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "100",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "diff": false,
+        "className": "",
+        "x": 950,
+        "y": 660,
+        "wires": []
+    },
+    {
+        "id": "6fe4019bb468dd2d",
+        "type": "ui_chart",
+        "z": "3a2cde8adb50f9b7",
+        "name": "",
+        "group": "da96b184ac761774",
+        "order": 19,
+        "width": 12,
+        "height": 7,
+        "label": "MQTT Humidity",
+        "chartType": "line",
+        "legend": "true",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "0",
+        "ymax": "50",
+        "removeOlder": 1,
+        "removeOlderPoints": "",
+        "removeOlderUnit": "60",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 920,
+        "y": 720,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "1309ac8f593ee8b5",
+        "type": "mqtt in",
+        "z": "3a2cde8adb50f9b7",
+        "name": "",
+        "topic": "dht11/humidity",
+        "qos": "1",
+        "datatype": "auto-detect",
+        "broker": "558d974b449cf58c",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 580,
+        "y": 740,
+        "wires": [
+            [
+                "6fe4019bb468dd2d"
+            ]
+        ]
+    },
+    {
+        "id": "85cb165bfd39b16a",
+        "type": "ui_spacer",
+        "z": "3a2cde8adb50f9b7",
+        "name": "spacer",
+        "group": "da96b184ac761774",
+        "order": 1,
+        "width": 22,
+        "height": 1
+    },
+    {
+        "id": "dc92d0f29d48afd1",
+        "type": "ui_spacer",
+        "z": "3a2cde8adb50f9b7",
+        "name": "spacer",
+        "group": "da96b184ac761774",
+        "order": 2,
+        "width": 22,
+        "height": 1
+    },
+    {
+        "id": "d04c10b7ab722c3d",
+        "type": "ui_spacer",
+        "z": "3a2cde8adb50f9b7",
+        "name": "spacer",
+        "group": "da96b184ac761774",
+        "order": 8,
+        "width": 7,
+        "height": 1
+    },
+    {
+        "id": "ccad31884ebeb970",
+        "type": "ui_spacer",
+        "z": "3a2cde8adb50f9b7",
+        "name": "spacer",
+        "group": "da96b184ac761774",
+        "order": 12,
+        "width": 7,
+        "height": 1
+    },
+    {
+        "id": "9eceeef4f71b2ffa",
+        "type": "ui_spacer",
+        "z": "3a2cde8adb50f9b7",
+        "name": "spacer",
+        "group": "da96b184ac761774",
+        "order": 13,
+        "width": 7,
+        "height": 1
+    },
+    {
+        "id": "1d642355348ed15f",
+        "type": "ui_spacer",
+        "z": "3a2cde8adb50f9b7",
+        "name": "spacer",
+        "group": "da96b184ac761774",
+        "order": 14,
+        "width": 7,
+        "height": 1
+    },
+    {
+        "id": "fc6b2fdcd62ac0cf",
+        "type": "ui_spacer",
+        "z": "3a2cde8adb50f9b7",
+        "name": "spacer",
+        "group": "da96b184ac761774",
+        "order": 15,
+        "width": 4,
+        "height": 1
+    },
+    {
+        "id": "62fc5543d514f04a",
+        "type": "ui_spacer",
+        "z": "3a2cde8adb50f9b7",
+        "name": "spacer",
+        "group": "da96b184ac761774",
+        "order": 17,
+        "width": 8,
+        "height": 1
+    },
+    {
+        "id": "da96b184ac761774",
+        "type": "ui_group",
+        "name": "Building 57",
+        "tab": "0a97529e6ca3721c",
+        "order": 1,
+        "disp": true,
+        "width": "22",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "558d974b449cf58c",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "localhost",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "0a97529e6ca3721c",
+        "type": "ui_tab",
+        "name": "RMIT",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    }
+]

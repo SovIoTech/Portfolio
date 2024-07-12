@@ -1,0 +1,60 @@
+#include "Arduino.h"
+#include "Audio.h"
+#include "SD.h"
+#include "FS.h"
+ 
+// microSD Card Reader connections
+#define SD_CS          5
+#define SPI_MOSI      23 
+#define SPI_MISO      19
+#define SPI_SCK       18
+ 
+// I2S Connections
+#define I2S_DOUT      22
+#define I2S_BCLK      26
+#define I2S_LRC       25
+ 
+const char* audiofilenames[] = {
+  "/ALBELE.mp3",
+  "/IELTS.mp3"};
+
+int Button1 = 2;
+int Button2 = 15;
+
+Audio audio;
+
+void setup() {
+
+    pinMode(Button1, INPUT_PULLDOWN);    
+    pinMode(Button2, INPUT_PULLDOWN);    
+
+    pinMode(SD_CS, OUTPUT);      digitalWrite(SD_CS, HIGH);
+    SPI.begin(SPI_SCK, SPI_MISO, SPI_MOSI);
+    SPI.setFrequency(1000000);
+    Serial.begin(115200);
+    SD.begin(SD_CS);
+ 
+    audio.setPinout(I2S_BCLK, I2S_LRC, I2S_DOUT);
+
+}
+
+void loop(){
+
+  audio.loop();
+
+     if (digitalRead(Button1) == HIGH)
+      {
+       Serial.println ("BUTTON 1 PRESSED");
+    
+          audio.setVolume(21); // 0...21
+          audio.connecttoFS(SD, audiofilenames[0]); // Play Audio 1
+      }  
+
+     if (digitalRead(Button2) == HIGH)
+      {
+       Serial.println ("BUTTON 2 PRESSED");
+    
+          audio.setVolume(21); // 0...21
+          audio.connecttoFS(SD, audiofilenames[1]); // Play Audio 2
+      }                                                                                                                                                                                                                 
+}
