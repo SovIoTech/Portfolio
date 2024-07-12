@@ -27,6 +27,30 @@ Welcome to SovIoTech, this is a portfolio showcasing our Embedded Systems and Io
   - [Smart Meter Monitoring with Node-RED](#smart-meter-monitoring-with-node-red)
   - [Tech Support for Jetson Nano](#tech-support-for-jetson-nano)
   - [Temperature Monitoring, LED Control via MQTT, IoT Gateway with Node-RED](#temperature-monitoring-led-control-via-mqtt-iot-gateway-with-node-red)
+  - [Zapier Automation - Gmail to Excel to Google Calendars](#zapier-automation-gmail-to-excel-to-google-calendars)
+  - [ShellyAPP - Node-RED Cloning Realtime Data using HTTP Protocol](#shellyapp-node-red-cloning-realtime-data-using-http-protocol)
+  - [Node-RED - Carbon Footprints in IoT Devices](#node-red-carbon-footprints-in-iot-devices)
+  - [Node-RED - Controller for Scaled Values](#node-red-controller-for-scaled-values)
+  - [Node-RED - DataSet Sorting using MQTT and Context Variables](#node-red-dataset-sorting-using-mqtt-and-context-variables)
+  - [Node-RED - Dynamic Production Cycle for Industry](#node-red-dynamic-production-cycle-for-industry)
+  - [Node-RED - Energy IoT Monitoring System](#node-red-energy-iot-monitoring-system)
+  - [Node-RED - Flow and Temperature of Generator Monitoring System](#node-red-flow-and-temperature-of-generator-monitoring-system)
+  - [Node-RED - IoT Railway Station](#node-red-iot-railway-station)
+  - [Node-RED - Light and Moisture Monitoring Dashboard](#node-red-light-and-moisture-monitoring-dashboard)
+  - [Node-RED - MQTT Weather Analysis and Visualization Dashboard](#node-red-mqtt-weather-analysis-and-visualization-dashboard)
+  - [Node-RED - Measuring Skin Conductance from DBMS Parameters](#node-red-measuring-skin-conductance-from-dbms-parameters)
+  - [Node-RED - Payload using Timestamps from Multiple Files](#node-red-payload-using-timestamps-from-multiple-files)
+  - [Node-RED - Smart Power Meter](#node-red-smart-power-meter)
+  - [Node-RED - Smart Water Management System](#node-red-smart-water-management-system)
+  - [Node-RED Sparkplug - Weather Monitoring System](#node-red-sparkplug-weather-monitoring-system)
+  - [Node-RED to Mobile using PushBullets](#node-red-to-mobile-using-pushbullets)
+  - [Node-RED to Python using MQTT](#node-red-to-python-using-mqtt)
+  - [NodeRED - IoT API WhatsAppEXCEL](#nodered-iot-api-whatsappexcel)
+  - [NodeRED - IoT Tank Monitoring](#nodered-iot-tank-monitoring)
+  - [NodeRED - IoT UIBuilder Website](#nodered-iot-uibuilder-website)
+  - [NodeRED - IoT Website Data Management](#nodered-iot-website-data-management)
+  - [OPUCA To Node-RED Visualization Cloning and Analysis Dashboard](#opuca-to-node-red-visualization-cloning-and-analysis-dashboard)
+  - [Project Python NodeRED Integration](#project-python-nodered-integration)
 - [Getting Started](#getting-started)
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
@@ -105,6 +129,78 @@ Welcome to SovIoTech, this is a portfolio showcasing our Embedded Systems and Io
 
 ### Temperature Monitoring, LED Control via MQTT, IoT Gateway with Node-RED
 **Description:** Developing an IoT gateway using Node-RED for temperature monitoring and LED control via MQTT protocol.
+
+### Zapier Automation - Gmail to Excel to Google Calendars
+**Description:** Automating data flow from Gmail to Excel to Google Calendars using Zapier for streamlined data management.
+
+### ShellyAPP - Node-RED Cloning Realtime Data using HTTP Protocol
+**Description:** Cloning real-time data using HTTP protocol with ShellyAPP and Node-RED for efficient data synchronization.
+
+### Node-RED - Carbon Footprints in IoT Devices
+**Description:** Monitoring and analyzing carbon footprints in IoT devices using Node-RED for environmental sustainability.
+
+### Node-RED - Controller for Scaled Values
+**Description:** Creating a controller in Node-RED for managing scaled values in industrial applications.
+
+### Node-RED - DataSet Sorting using MQTT and Context Variables
+**Description:** Sorting datasets using MQTT and context variables in Node-RED for efficient data organization and processing.
+
+### Node-RED - Dynamic Production Cycle for Industry
+**Description:** Implementing a dynamic production cycle management system in Node-RED for industrial automation.
+
+### Node-RED - Energy IoT Monitoring System
+**Description:** Developing an energy IoT monitoring system with Node-RED for real-time energy consumption analysis.
+
+### Node-RED - Flow and Temperature of Generator Monitoring System
+**Description:** Monitoring flow and temperature in generator systems using Node-RED for predictive maintenance.
+
+### Node-RED - IoT Railway Station
+**Description:** Designing an IoT solution for railway station management using Node-RED for enhanced operational efficiency.
+
+### Node-RED - Light and Moisture Monitoring Dashboard
+**Description:** Creating a dashboard for monitoring light and moisture levels using Node-RED for agricultural applications.
+
+### Node-RED - MQTT Weather Analysis and Visualization Dashboard
+**Description:** Analyzing and visualizing weather data using MQTT and Node-RED for weather monitoring applications.
+
+### Node-RED - Measuring Skin Conductance from DBMS Parameters
+**Description:** Measuring skin conductance using DBMS parameters with Node-RED for biometric data analysis.
+
+### Node-RED - Payload using Timestamps from Multiple Files
+**Description:** Processing payloads using timestamps from multiple files in Node-RED for synchronized data analysis.
+
+### Node-RED - Smart Power Meter
+**Description:** Developing a smart power meter system using Node-RED for accurate power consumption monitoring.
+
+### Node-RED - Smart Water Management System
+**Description:** Implementing a smart water management system using Node-RED for efficient water usage monitoring.
+
+### Node-RED Sparkplug - Weather Monitoring System
+**Description:** Creating a weather monitoring system using Node-RED Sparkplug for real-time weather data analysis.
+
+### Node-RED to Mobile using PushBullets
+**Description:** Sending Node-RED data to mobile devices using PushBullets for instant notifications and alerts.
+
+### Node-RED to Python using MQTT
+**Description:** Integrating Node-RED with Python using MQTT for seamless data exchange and processing.
+
+### NodeRED - IoT API WhatsAppEXCEL
+**Description:** Integrating IoT APIs with WhatsApp and Excel using Node-RED for data management and analysis.
+
+### NodeRED - IoT Tank Monitoring
+**Description:** Monitoring IoT tanks using Node-RED for real-time tank level and usage tracking.
+
+### NodeRED - IoT UIBuilder Website
+**Description:** Creating a dynamic IoT UIBuilder website using Node-RED for customizable IoT dashboard displays.
+
+### NodeRED - IoT Website Data Management
+**Description:** Managing IoT website data using Node-RED for efficient data storage and retrieval.
+
+### OPUCA To Node-RED Visualization Cloning and Analysis Dashboard
+**Description:** Cloning and analyzing visualizations using OPUCA and Node-RED for comprehensive data analysis.
+
+### Project Python NodeRED Integration
+**Description:** Integrating Python with Node-RED for enhanced functionality and data processing capabilities.
 
 ## Getting Started
 
